@@ -1,0 +1,455 @@
+<html lang="en">
+<head>
+  <title>Stream : Controlling Media Direction & Sending Bandwidth (Experimental)</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <!-- Configure for testing hash authentication -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/hmac-sha1.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/enc-base64.js"></script>
+
+  <!-- Configure for hosting from repository -->
+  <script src="../../../publish/skylink.complete.js"></script>
+  <script src="../../config.js"></script>
+
+  <!-- Configure for hosting individually:
+    <script src="https://cdn.temasys.io/skylink/skylinkjs/0.6.x/skylink.complete.js"></script>
+    <script>
+      var config = {
+        appKey: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+        defaultRoom: 'audio-video'
+      };
+    </script>
+  -->
+
+  <style>
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #header {
+      font-size: 16px;
+      background: #f8f8f8;
+      border-bottom: solid 1px #ccc;
+      padding: 17px 25px 12px;
+    }
+
+    #header .red {
+      color: red;
+    }
+
+    #header button,
+    .section .controls button {
+      background: #ccc;
+      margin-left: 15px;
+      padding: 5px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background .1s ease-in-out;
+      -webkit-transition: background .1s ease-in-out;
+      -moz-transition: background .1s ease-in-out;
+    }
+
+    #header button:hover,
+    .section .controls button:hover {
+      background: #aaa;
+    }
+
+    #header button[disabled],
+    .section .controls button[disabled] {
+      background: #ccc!important;
+      opacity: .5;
+      cursor: initial;
+    }
+
+    #header.error {
+      color: #d9534f;
+      font-weight: 600;
+    }
+
+    .section {
+      margin: 35px 55px;
+      padding: 15px 15px;
+      border: solid 1px #ccc;
+      border-radius: 5px;
+    }
+
+    .section h4 {
+      margin: 0 0 5px;
+    }
+
+    .section > div {
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    .section .controls {
+      padding-right: 15px;
+      margin-right: 15px;
+      border-right: solid 1px #e8e8e8;
+    }
+
+    .section .controls p {
+      margin: 15px 0;
+      font-size: 12px;
+      color: #686868;
+    }
+
+    .section .controls p b,
+    .section .controls p select {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .section .controls p b {
+      width: 155px;
+    }
+
+    .section .controls p select {
+      font-size: 14px;
+      width: 150px;
+    }
+
+    .section .controls button {
+      margin-top: 15px;
+      margin-left: 0;
+    }
+
+    .section .peers .peer {
+      display: inline-block;
+      vertical-align: top;
+      border: solid 2px #888;
+      border-bottom-left-radius: 7px;
+      border-bottom-right-radius: 7px;
+      margin: 15px 15px 0 0;
+    }
+
+    .section .peers .peer.self {
+      border-color: red;
+    }
+
+    .section .peers .peer,
+    .section .peers .peer .peer-video {
+      width: 335px;
+      border-top-left-radius: 7px;
+      border-top-right-radius: 7px;
+    }
+
+    .section .peers .peer .peer-video {
+      background: #ccc;
+      height: 195px;
+    }
+
+    .section .peers .peer .peer-video.active {
+      background: #000;
+    }
+
+    .section .peers .peer .peer-info {
+      padding: 5px 12px;
+      font-size: 14px;
+      color: #454545;
+    }
+
+    .section .peers .peer .peer-info p {
+      margin: 5px 0;
+    }
+
+    .section .peers .peer .peer-info p b,
+    .section .peers .peer .peer-info p span {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .section .peers .peer .peer-info p b {
+      width: 95px;
+      font-size: 12px;
+      color: #888;
+    }
+
+    .section .peers .peer .peer-info p select {
+      width: 175px;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="header">
+    The stream of the self Peer in the Room is highlighted in (<b class="red">Red</b>).
+    <button id="start" onclick="start()">Start & Connect (Remote)</button>
+  </div>
+
+  <div class="section">
+    <h4>Local Peer (Controller)</h4>
+    <div class="controls">
+      <p><b>Audio Media Settings:</b> <select id="audio-media-control" disabled="true"></select></p>
+      <p><b>Audio Max Bandwidth:</b> <select id="audio-media-bandwidth" disabled="true"></select></p>
+      <p><b>Video Media Settings:</b> <select id="video-media-control" disabled="true"></select></p>
+      <p><b>Video Max Bandwidth:</b> <select id="video-media-bandwidth" disabled="true"></select></p>
+      <p><b>Datachannel Media Settings:</b> <select id="datachannel-media-control" disabled="true"></select></p>
+      <button id="connect" onclick="connect()" disabled="true">Set Settings & Connect (Local)</button>
+    </div>
+    <div id="local-peers" class="peers"></div>
+  </div>
+
+  <div class="section">
+    <h4>Remote Peer</h4>
+    <div id="remote-peers" class="peers"></div>
+  </div>
+
+  <script>
+    var skylinkLocal = new Skylink();
+    var skylinkRemote = new Skylink();
+    var hasMCU = false;
+    var bandwidthPresets = {
+      video: [2000, 1500, 1000, 800, 500, 300],
+      audio: [350, 250, 160, 100, 80, 70, 50, 30, 20, 10] 
+    };
+
+    // Event triggered when MCU has joined the Room.
+    skylinkLocal.on('serverPeerJoined', function (peerId, peerType) {
+      if (peerType === skylinkLocal.SERVER_PEER_TYPE.MCU) {
+        hasMCU = true;
+      }
+    });
+
+    // Event triggered when Peer has joined the Room.
+    function onPeerJoinedCallback (elementAppendId) {
+      return function (peerId, peerInfo, isSelf) {
+        var element = document.createElement('div');
+        element.id = elementAppendId + '-' + peerId;
+        element.className = 'peer' + (isSelf ? ' self' : '');
+        element.innerHTML = 
+          // Mute <video> element for self Peer only to prevent echo feedback when connected without headphones.
+          '<video id="' + elementAppendId + '-' + peerId + '-video" class="peer-video" autoplay="true"' + (isSelf ? ' muted="true"' : '') + '></video>' +
+          '<div class="peer-info">' +
+            '<p><b>Peer ID:</b> ' + peerId + '</p>' +
+          // `peerInfo.settings.audio` and `peerInfo.settings.video` will appear as `false` because there is no stream present.
+            '<p><b>Media:</b> <span id="' + elementAppendId + '-' + peerId + '-info">None</span></p>' +
+            '<p><b>Datachannel:</b> <span id="' + elementAppendId + '-' + peerId + '-datachannel">' + (isSelf && peerInfo.settings.data ? 'Enabled' : 'Disabled') + '</span></p>' +
+            (!hasMCU && !isSelf && elementAppendId === 'local-peers' ? '<p><b>Audio Max Bandwidth:</b> <select id="' + elementAppendId + '-' + peerId + '-audio-bandwidth"></select></p>' : '') +
+            (!hasMCU && !isSelf && elementAppendId === 'local-peers' ? '<p><b>Video Max Bandwidth:</b> <select id="' + elementAppendId + '-' + peerId + '-video-bandwidth"></select></p>' : '') +
+          '</div>';
+
+        document.getElementById(elementAppendId).appendChild(element);
+
+        if (!hasMCU && !isSelf && elementAppendId === 'local-peers') {
+          ['audio', 'video'].forEach(function (trackType) {
+            bandwidthPresets[trackType].forEach(function (item) {
+              var option = document.createElement('option');
+              option.value = JSON.stringify(item);
+              option.selected = item === parseInt( document.getElementById(trackType + '-media-bandwidth').value, 10);
+              option.innerHTML = 'Send max ' + item + ' kbps' + (option.selected ? ' (Default)' : '');
+
+              document.getElementById(elementAppendId + '-' + peerId + '-' + trackType + '-bandwidth').appendChild(option);
+            });
+
+            document.getElementById(elementAppendId + '-' + peerId + '-' + trackType + '-bandwidth').onchange = function () {
+              skylinkLocal.refreshConnection(peerId, {
+                bandwidth: {
+                  video: parseInt( document.getElementById(elementAppendId + '-' + peerId + '-video-bandwidth').value, 10),
+                  audio: parseInt( document.getElementById(elementAppendId + '-' + peerId + '-audio-bandwidth').value, 10)
+                }
+              });
+            };
+          });
+        }
+      };
+    }
+    skylinkLocal.on('peerJoined', onPeerJoinedCallback('local-peers'));
+    skylinkRemote.on('peerJoined', onPeerJoinedCallback('remote-peers'));
+
+    // Event triggered when Peer has sent a stream.
+    function onIncomingStreamCallback (elementAppendId) {
+      return function (peerId, stream, isSelf, peerInfo) {
+        if (!document.getElementById(elementAppendId + '-' + peerId)) {
+          return;
+        }
+
+        if (peerInfo.settings.audio && peerInfo.settings.video) {
+          document.getElementById(elementAppendId + '-' + peerId + '-info').innerHTML = 'Audio & Video';
+
+        } else if (peerInfo.settings.audio) {
+          document.getElementById(elementAppendId + '-' + peerId + '-info').innerHTML = 'Audio Only';
+        
+        } else if (peerInfo.settings.video) {
+          document.getElementById(elementAppendId + '-' + peerId + '-info').innerHTML = 'Video Only';
+        
+        } else {
+          document.getElementById(elementAppendId + '-' + peerId + '-info').innerHTML = 'None';
+        }
+
+        document.getElementById(elementAppendId + '-' + peerId + '-video').className += ' active';
+        attachMediaStream( document.getElementById(elementAppendId + '-' + peerId + '-video'), stream );
+      };
+    }
+
+    skylinkLocal.on('incomingStream', onIncomingStreamCallback('local-peers'));
+    skylinkRemote.on('incomingStream', onIncomingStreamCallback('remote-peers'));
+
+    // Event triggered when Peer has left the Room.
+    function onPeerLeftCallback (elementAppendId) {
+      return function (peerId, peerInfo, isSelf) {
+        if (!document.getElementById(elementAppendId + '-' + peerId)) {
+          return;
+        }
+
+        document.getElementById(elementAppendId).removeChild( document.getElementById(elementAppendId + '-' + peerId) );
+      };
+    }
+
+    skylinkLocal.on('peerLeft', onPeerLeftCallback('local-peers'));
+    skylinkRemote.on('peerLeft', onPeerLeftCallback('remote-peers'));
+
+    // Event triggered when Peer datachannel state has changed.
+    function onDataChannelStateCallback (elementAppendId) {
+      return function (state, peerId) {
+        console.info(state, peerId);
+        if (!document.getElementById(elementAppendId + '-' + peerId)) {
+          return;
+        }
+        
+        if (state === skylinkLocal.DATA_CHANNEL_STATE.OPEN) {
+          document.getElementById(elementAppendId + '-' + peerId + '-datachannel').innerHTML = 'Enabled';
+        }
+      };
+    }
+
+    skylinkLocal.on('dataChannelState', onDataChannelStateCallback('local-peers'));
+    skylinkRemote.on('dataChannelState', onDataChannelStateCallback('remote-peers'));
+
+
+    // Function to start the connection for Remote Peer to Room.
+    function start () {
+      document.getElementById('start').disabled = true;
+
+      skylinkRemote.init(config, function (remoteInitErr) {
+        if (remoteInitErr) {
+          document.getElementById('header').className = 'error';
+          document.getElementById('header').innerHTML = 'Failed initialising: ' + (remoteInitErr.error.message || remoteInitErr.error);
+          return;
+        }
+
+        skylinkRemote.joinRoom({
+          audio: true,
+          video: true
+        }, function (remoteJoinRoomErr) {
+          if (remoteInitErr) {
+            document.getElementById('header').className = 'error';
+            document.getElementById('header').innerHTML = 'Failed connecting to Room: ' + (remoteJoinRoomErr.error.message || remoteJoinRoomErr.error);
+            return;
+          }
+
+          skylinkLocal.init(config, function (localInitErr) {
+            if (localInitErr) {
+              document.getElementById('header').className = 'error';
+              document.getElementById('header').innerHTML = 'Failed initialising: ' + (localInitErr.error.message || localInitErr.error);
+              return;
+            }
+
+            document.getElementById('connect').disabled = false;
+            document.getElementById('audio-media-control').disabled = false;
+            document.getElementById('audio-media-bandwidth').disabled = false;
+            document.getElementById('video-media-control').disabled = false;
+            document.getElementById('video-media-bandwidth').disabled = false;
+            document.getElementById('datachannel-media-control').disabled = false;
+          });
+        });
+      });
+    }
+
+    // Function to start the connection for Local Peer to Room.
+    function connect () {
+      document.getElementById('connect').disabled = true;
+
+      var audioSettings = JSON.parse( document.getElementById('audio-media-control').value );
+      var videoSettings = JSON.parse( document.getElementById('video-media-control').value );
+      var datachannelSettings = JSON.parse( document.getElementById('datachannel-media-control').value );
+
+      skylinkLocal.joinRoom({
+        audio: true,
+        video: true,
+        bandwidth: {
+          audio: parseInt( document.getElementById('audio-media-bandwidth'), 10 ),
+          video: parseInt( document.getElementById('video-media-bandwidth'), 10 )
+        },
+        sdpSettings: {
+          connection: {
+            audio: !!audioSettings,
+            video: !!videoSettings,
+            data: !!datachannelSettings
+          },
+          direction: {
+            audio: {
+              send: audioSettings ? audioSettings.send : false,
+              receive: audioSettings ? audioSettings.receive : false
+            },
+            video: {
+              send: videoSettings ? videoSettings.send : false,
+              receive: videoSettings ? videoSettings.receive : false
+            }
+          }
+        }
+      }, function (localJoinRoomErr) {
+        if (localJoinRoomErr) {
+          document.getElementById('local-peers').className = 'error';
+          document.getElementById('local-peers').innerHTML = 'Failed connecting to Room: ' + (localJoinRoomErr.error.message || localJoinRoomErr.error);
+          return;
+        }
+
+        document.getElementById('connect').disabled = false;
+      });
+    }
+  
+    [
+      { title: 'Enabled', value: true },
+      { title: 'Enabled for Send & Receive', value: { send: true, receive: true } },
+      { title: 'Enabled for Send Only', value: { send: true, receive: false } },
+      { title: 'Enabled for Receive Only', value: { send: false, receive: true } },
+      { title: 'Disabled', value: false }
+
+    ].forEach(function (item) {
+      var createOption = function () {
+        var element = document.createElement('option');
+        element.value = JSON.stringify(item.value);
+        element.innerHTML = item.title;
+        return element;
+      };
+
+      if (typeof item.value === 'boolean') {
+        document.getElementById('datachannel-media-control').appendChild(createOption());
+
+        if (!item.value) {
+          document.getElementById('audio-media-control').appendChild(createOption());
+          document.getElementById('video-media-control').appendChild(createOption());
+        }
+
+      } else {
+        document.getElementById('audio-media-control').appendChild(createOption());
+        document.getElementById('video-media-control').appendChild(createOption());
+      }
+    });
+
+    bandwidthPresets.audio.forEach(function (item) {
+      var option = document.createElement('option');
+      option.value = JSON.stringify(item);
+      option.innerHTML = 'Send max ' + item + ' kbps';
+
+      document.getElementById('audio-media-bandwidth').appendChild(option);
+    });
+
+    bandwidthPresets.video.forEach(function (item) {
+      var option = document.createElement('option');
+      option.value = JSON.stringify(item);
+      option.innerHTML = 'Send max ' + item + ' kbps';
+
+      document.getElementById('video-media-bandwidth').appendChild(option);
+    });
+
+  </script>
+</body>
+</html>

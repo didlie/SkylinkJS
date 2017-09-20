@@ -126,10 +126,11 @@
       display: inline-block;
       vertical-align: top;
       margin: 0 9px 0 0;
-      padding: 5px 15px;
-      background: #f8f8f8;
-      border: solid 1px #aaa;
-      color: #484848;
+      padding: 7px 25px;
+      background: #01B0CF;
+      border: solid 1px #01B0CF;
+      color: #fff;
+      font-weight: 600;
       font-size: 14px;
       cursor: pointer;
       transition: background .1s ease-in-out;
@@ -138,12 +139,26 @@
     }
 
     .container .container-panel.left .btn-group button:hover {
-      background: #ccc;
+      background: #0297B1;
+    }
+
+    .container .container-panel.left .btn-group button.preview {
+      color: #01B0CF;
+      background: #fff;
+    }
+
+    .container .container-panel.left .btn-group button.preview:hover {
+      background: #eee;
     }
 
     .container .container-panel.left .btn-group button[disabled] {
       cursor: initial;
-      opacity: .25;
+      opacity: .5;
+      background: #01B0CF!important;
+    }
+
+    .container .container-panel.left .btn-group button[disabled].preview {
+      background: #fff!important;
     }
 
     .container .container-panel.right {
@@ -211,23 +226,29 @@
       </div>
 
       <div class="panel-section">
-        <b>Audio Input (Microphone) Source: </b>
-        <select id="audio-input">
-          <option value="false">None</option>
+        <b>Screen Media Source: </b>
+        <select id="screen-media"></select>
+      </div>
+
+      <div class="panel-section">
+        <b>Screen Media Source Input: </b>
+        <select id="screen-media-input">
+          <option value="null">Default</option>
         </select>
       </div>
 
       <div class="panel-section">
-        <b>Video Input (Camera) Source: </b>
-        <select id="video-input">
+        <b>Audio Input (Microphone) Source: </b>
+        <select id="audio-input">
           <option value="false">None</option>
         </select>
+        <p><input id="audio-input-tab" type="checkbox" disabled="true"> <label for="audio-input-tab">Use Tab Audio</label></p>
       </div>
 
       <div class="btn-group">
         <div id="error"></div>
-        <button id="btn-preview" class="preview" onclick="preview()">Use Media Settings</button>
-        <button id="btn-send" onclick="send()">Connect</button>
+        <button id="btn-preview" class="preview" onclick="preview()">Select Media Settings</button>
+        <button id="btn-send" onclick="send()" disabled="true">Connect</button>
       </div>
 
       <div class="panel-section">
@@ -247,6 +268,7 @@
       preview: null,
       current: null
     };
+    var sourcesInput = {};
 
     // Event triggered when Peer has joined the Room.
     skylink.on('peerJoined', function (peerId, peerInfo, isSelf) {
@@ -306,10 +328,19 @@
 
     // Function that gets the preview Stream media and sends it when self Peer chooses to.
     function preview () {
-      var settings = {
-        audio: JSON.parse( document.getElementById('audio-input').value ),
-        video: JSON.parse( document.getElementById('video-input').value )
-      };
+      var audioSettings = JSON.parse( document.getElementById('audio-input').value );
+      var screenSettings = document.getElementById('screen-media').value;
+
+      if (document.getElementById('audio-input-tab').checked) {
+        audioSettings = {};
+        screenSettings = [screenSettings, 'audio'];
+
+      } else if (document.getElementById('screen-media-input').value !== 'null') {
+        screenSettings = {
+          mediaSource: screenSettings,
+          sourceId: document.getElementById('screen-media-input').value
+        };
+      }
 
       // Prevent from double-clicks.
       document.getElementById('btn-preview').disabled = true;
@@ -328,7 +359,8 @@
       }
 
       if (settings.audio || settings.video) {
-        navigator.getUserMedia(settings, function (stream) {
+        navigator.getUserMedia({
+        }, function (stream) {
           streams.preview = stream;
 
           document.getElementById('btn-preview').disabled = false;
@@ -422,14 +454,12 @@
 
     // Retrieve the list of audio input, output and video input sources.
     skylink.getStreamSources(function (sources) {
-      Object.keys(sources).forEach(function (trackType) {
-        sources[trackType].input.forEach(function (item) {
-          var option = document.createElement('option');
-          option.value = JSON.stringify({ deviceId: item.deviceId });
-          option.innerHTML = item.label;
+      sources.audio.input.forEach(function (item) {
+        var option = document.createElement('option');
+        option.value = JSON.stringify({ deviceId: item.deviceId });
+        option.innerHTML = item.label;
 
-          document.getElementById(trackType + '-input').appendChild(option);
-        });
+        document.getElementById('audio-input').appendChild(option);
       });
 
       // Render the list of audio output sources only if .setSinkId() is supported!
@@ -451,6 +481,50 @@
         };
       }
     });
+
+    // Retrieve the list of screensharing sources.
+    skylink.getScreenSources(function (sources) {
+      sources.mediaSource.forEach(function (item) {
+        if (item === 'audio') {
+          return;
+        }
+
+        var option = document.createElement('option');
+        option.value = item;
+        option.innerHTML = 'Source: ' + item;
+
+        document.getElementById('screen-media').appendChild(option);
+
+        sourcesInput[item] = [];
+
+        sources.mediaSourceInput.forEach(function (inputItem) {
+          sourcesInput[item].push({
+            title: inputItem.label,
+            value: inputItem.sourceId
+          });
+        });
+      });
+    });
+
+    document.getElementById('screen-media').onchange = function () {
+      document.getElementById('screen-media-input').innerHTML = '<option value="null">Default</option>';
+      document.getElementById('audio-input-tab').checked = false;
+
+      document.getElementById('audio-input-tab').disabled = document.getElementById('screen-media').value !== 'tab';
+      
+      sourcesInput[document.getElementById('screen-media').value].forEach(function (item) {
+        var option = document.createElement('option');
+        option.value = item.value;
+        option.innerHTML = 'Input: ' + item.title;
+
+        document.getElementById('screen-media').appendChild(option);
+      });
+    };
+
+    document.getElementById('audio-input-tab').onchange = function () {
+      document.getElementById('audio-input').disabled = document.getElementById('audio-input-tab').checked;
+      document.getElementById('screen-media-input').disabled = document.getElementById('audio-input-tab').checked;
+    };
   </script>
 
 </body>
