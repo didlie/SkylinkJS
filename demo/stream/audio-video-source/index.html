@@ -5,9 +5,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
+  <!-- Configure for styling for demo purposes -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"> 
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.5/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+  <style>
+    .video {
+      background: #ccc;
+    }
+
+    .video.active {
+      background: #000;
+    }
+
+    .btn {
+      cursor: pointer;
+    }
+
+    .btn[disabled] {
+      cursor: initial!important;
+    }
+
+    .modal .modal-dialog .modal-content .modal-body {
+      padding-bottom: 25px;
+    }
+
+    .modal .modal-dialog .modal-content .modal-body .video-wrapper {
+      margin-bottom: 15px;
+    }
+
+    .modal .modal-dialog .modal-content .modal-body .video-wrapper,
+    .modal .modal-dialog .modal-content .modal-body .video-wrapper .video {
+      position: relative;
+      z-index: 1;
+      width: 468px;
+      height: 250px;
+    }
+
+    .modal .modal-dialog .modal-content .modal-body .video-wrapper .video-cover {
+      position: absolute;
+      z-index: 2;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      font-weight: 600;
+      text-align: center;
+      padding: 105px 15px;
+      color: #888;
+    }
+
+    .modal .modal-dialog .modal-content .modal-body .input-group-addon,
+    .modal .modal-dialog .modal-content .modal-body .input-group .form-control {
+      border-radius: 0;
+    }
+
+    .modal .modal-dialog .modal-content .modal-body .input-group-addon {
+      width: 120px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 0;
+      background: 0;
+      padding-left: 2px;
+    }
+
+    .modal .modal-dialog .modal-content .modal-body .input-group .form-control {
+      border: 0;
+    }
+
+    #selector .modal-dialog .modal-content .modal-header .close {
+      display: none;
+    }
+
+    #selector[state="connected"] .modal-dialog .modal-content .modal-header .close {
+      display: inline-block;
+    }
+
+    #selector[state="error"] .modal-dialog .modal-content {
+      color: #dc3545!important;
+    }
+
+    #selector[state="error"] .modal-dialog .modal-content .modal-footer {
+      display: none;
+    }
+  </style>
+
   <!-- Configure for testing hash authentication -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/hmac-sha1.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/enc-base64.js"></script>
+
+  <!-- Configure for promise polyfill for IE to enumerateDevices() -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/4.1.1/es6-promise.min.js"></script>
 
   <!-- Configure for hosting from repository -->
   <script src="../../../publish/skylink.complete.js"></script>
@@ -22,227 +111,125 @@
       };
     </script>
   -->
-
-  <style>
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      overflow: hidden;
-      font-size: 14px;
-    }
-
-    .container .container-panel {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      display: inline-block;
-      vertical-align: top;
-      height: 100%;
-      width: 100%;
-      overflow-y: auto;
-    }
-
-    .container .container-panel.left {
-      width: 450px;
-      left: 0;
-      padding: 20px 15px;
-    }
-
-    .container .container-panel.left #preview {
-      position: relative;
-      width: 420px;
-      height: 250px;
-      padding-bottom: 15px;
-    }
-
-    .container .container-panel.left #preview .video-video,
-    .container .container-panel.right .peer .peer-video {
-      background: #aaa;
-      width: 100%;
-    }
-
-    .container .container-panel.left #preview .video-cover {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 2;
-      display: block;
-      padding-top: 105px;
-      background: rgba(255, 255, 255, .5);
-      text-align: center;
-      font-weight: 600;
-      color: #888;
-    }
-
-    .container .container-panel.left #preview .video-video {
-      position: relative;
-      z-index: 1;
-      height: 100%;
-    }
-
-    .container .container-panel.left #preview.active .video-cover {
-      display: none;
-    }
-
-    .container .container-panel.left #preview.active .video-video,
-    .container .container-panel.right .peer .peer-video.active {
-      background: #000;
-    }
-
-    .container .container-panel.left .panel-section {
-      display: block;
-      margin: 15px 0 0;
-    }
-
-    .container .container-panel.left .panel-section b {
-      display: inline-block;
-      vertical-align: middle;
-      width: 200px;
-      font-size: 12px;
-      color: #484848;
-    }
-
-    .container .container-panel.left .panel-section select {
-      margin-left: 50px;
-      width: 165px;
-    }
-
-    .container .container-panel.left .btn-group {
-      margin: 0 0 15px;
-      padding: 25px 0 15px;
-      border-bottom: solid 1px #e8e8e8;
-    }
-
-    .container .container-panel.left .btn-group #error {
-      margin: 15px 0;
-      color: #d9534f;
-    }
-
-    .container .container-panel.left .btn-group button {
-      display: inline-block;
-      vertical-align: top;
-      margin: 0 9px 0 0;
-      padding: 5px 15px;
-      background: #f8f8f8;
-      border: solid 1px #aaa;
-      color: #484848;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background .1s ease-in-out;
-      -webkit-transition: background .1s ease-in-out;
-      -moz-transition: background .1s ease-in-out;
-    }
-
-    .container .container-panel.left .btn-group button:hover {
-      background: #ccc;
-    }
-
-    .container .container-panel.left .btn-group button[disabled] {
-      cursor: initial;
-      opacity: .25;
-    }
-
-    .container .container-panel.right {
-      left: 450px;
-      right: 0;
-      background: #f8f8f8;
-      border-left: solid 1px #ccc;
-    }
-
-    .container .container-panel.right .peer {
-      display: inline-block;
-      vertical-align: top;
-      width: 300px;
-      margin: 15px;
-      background: #fff;
-      border: solid 1px #e8e8e8;
-    }
-
-    .container .container-panel.right .peer.self {
-      border-color: red;
-    }
-
-    .container .container-panel.right .peer,
-    .container .container-panel.right .peer .peer-video {
-      border-top-left-radius: 7px;
-      border-top-right-radius: 7px;
-    }
-
-    .container .container-panel.right .peer,
-    .container .container-panel.right .peer .peer-info {
-      border-bottom-left-radius: 7px;
-      border-bottom-right-radius: 7px;
-    }
-
-    .container .container-panel.right .peer .peer-video {
-      height: 180px;
-    }
-
-    .container .container-panel.right .peer .peer-info {
-      padding: 5px 12px;
-      color: #484848;
-    }
-
-    .container .container-panel.right .peer .peer-info p {
-      margin: 3px 0;
-      line-height: 21px;
-    }
-
-    .container .container-panel.right .peer .peer-info p b {
-      display: inline-block;
-      vertical-align: middle;
-      width: 95px;
-    }
-    
-  </style>
 </head>
 <body>
+  <div id="peers" class="container card-deck"></div>
 
-  <div class="container">
-    <div class="container-panel left">
+  <div id="selector" state="" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="selector-title" aria-hidden="true">
+    <div class="modal-dialog" role="document">
 
-      <div id="preview">
-        <div class="video-cover">No Preview Media</div>
-        <video id="preview-video" class="video-video" autoplay="true"></video>
-      </div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="selector-title" class="modal-title">Select Audio & Video Source to Join Call</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
 
-      <div class="panel-section">
-        <b>Audio Input (Microphone) Source: </b>
-        <select id="audio-input">
-          <option value="false">None</option>
-        </select>
-      </div>
+        <div id="selector-content" class="modal-body">
+          <div class="video-wrapper">
+            <video id="selector-stream" class="video" autoplay="true"></video>
+            <div class="video-cover">No Media</div>
+          </div>
+          <div class="input-group">
+            <span id="audio-input-title" class="input-group-addon">Microphone:</span>
+            <select id="audio-input"  class="form-control" aria-describedby="audio-input-title">
+              <option value="false">None</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <span id="video-input-title" class="input-group-addon">Camera:</span>
+            <select id="video-input"  class="form-control" aria-describedby="video-input-title">
+              <option value="false">None</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <span id="audio-output-title" class="input-group-addon">Speaker:</span>
+            <select id="audio-output"  class="form-control" aria-describedby="audio-output-title" disabled>
+              <option value="null">Default</option>
+            </select>
+          </div>
+        </div>
 
-      <div class="panel-section">
-        <b>Video Input (Camera) Source: </b>
-        <select id="video-input">
-          <option value="false">None</option>
-        </select>
-      </div>
-
-      <div class="btn-group">
-        <div id="error"></div>
-        <button id="btn-preview" class="preview" onclick="preview()">Use Media Settings</button>
-        <button id="btn-send" onclick="send()">Connect</button>
-      </div>
-
-      <div class="panel-section">
-        <b>Audio Output (Speaker) Source: </b>
-        <select id="audio-output">
-          <option value="false">None</option>
-        </select>
+        <div class="modal-footer">
+          <button id="selector-preview" type="button" class="btn btn-outline-primary">Get Stream First</button>
+          <button id="selector-connect" type="button" class="btn btn-primary" disabled="true">Then Connect</button>
+        </div>
       </div>
     </div>
-
-    <div id="peers" class="container-panel right"></div>
   </div>
 
   <script>
     var skylink = new Skylink();
+    var pendingStream = null;
+    var connected = false;
+
+    $('#selector').on('hide.bs.modal', function () {
+      attachMediaStream( document.getElementById('selector-stream'), null );
+    });
+
+    $('#selector').on('hidden.bs.modal', function () {
+      if (!connected) {
+        $('#selector').modal('show');
+      }
+    });
+
+    $('#selector').modal('show');
+
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+      if (document.getElementById('selector-stream') && document.getElementById('selector-stream').setSinkId) {
+        document.getElementById('audio-output').disabled = false;
+        document.getElementById('audio-output').innerHTML = '';
+      }
+
+      navigator.mediaDevices.enumerateDevices().then(function (sources) {
+        sources.forEach(function (sourceItem, index) {
+          var elementId = null;
+
+          if (['audio', 'audioinput'].indexOf(sourceItem.kind) > -1) {
+            elementId = 'audio-input';
+
+          } else if (['video', 'videoinput'].indexOf(sourceItem.kind) > -1) {
+            elementId = 'video-input';
+
+          } else if (['audiooutput'].indexOf(sourceItem.kind) > -1) {
+            elementId = 'audio-output';
+          }
+
+          if (elementId && !document.getElementById(elementId).disabled) {
+            var option = document.createElement('option');
+            option.value = JSON.stringify({
+              deviceId: sourceItem.deviceId || sourceItem.sourceId || sourceItem.id
+            });
+            option.innerHTML = sourceItem.label || sourceItem.kind + '_' + index;
+
+            document.getElementById(elementId).appendChild(option);
+          }
+        });
+      });
+    }
+
+    document.getElementById('selector-preview').onclick = function () {
+      var audioInputDevice = JSON.parse( document.getElementById('audio-input').value );
+      var audioOutputDevice = JSON.parse( document.getElementById('video-input').value );
+      var videoInputDevice = JSON.parse( document.getElementById('audio-output').value );
+
+      if (!audioInputDevice && !videoInputDevice) {
+        return;
+      }
+
+      navigator.getUserMedia({
+        audio: audioInputDevice,
+        video: videoInputDevice
+
+      }, function (stream) {
+        pendingStream = stream;
+        attachMediaStream( document.getElementById('selector-stream'), stream );
+
+      }, function (error) {});
+    };
+
+    /*var skylink = new Skylink();
     var streams = {
       preview: null,
       current: null
@@ -450,7 +437,7 @@
           renderAudioOutput();
         };
       }
-    });
+    });*/
   </script>
 
 </body>

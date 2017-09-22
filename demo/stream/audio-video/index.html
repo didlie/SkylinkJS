@@ -5,6 +5,91 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
+  <!-- Configure for styling for demo purposes -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"> 
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.5/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+  <style>
+    .navbar .navbar-text {
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .btn {
+      cursor: pointer;
+    }
+
+    .btn.disabled {
+      cursor: initial!important;
+    }
+
+    .card-deck {
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity .25s ease-in-out;
+      -webkit-transition: opacity .25s ease-in-out;
+      -moz-transition: opacity .25s ease-in-out;
+    }
+
+    .card-deck .card {
+      margin-top: 25px;
+      max-width: 300px;
+      font-size: 14px;
+      backface-visibility: 
+    }
+
+    .card-deck .card .card-img-top {
+      background: #aaa;
+      width: 100%;
+      height: 200px;
+    }
+
+    .card-deck .card .card-img-top.active {
+      background: #000;
+    }
+
+    .container {
+      position: relative;
+    }
+
+    .loader {
+      position: absolute;
+      z-index: 2;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      text-align: center;
+      padding: 125px 0 45px;
+      color: #888;
+      transition: opacity 1s ease-in-out;
+      -webkit-transition: opacity 1s ease-in-out;
+      -moz-transition: opacity 1s ease-in-out;
+    }
+
+    .loader .progress {
+      margin-top: 15px;
+    }
+
+    #state[state="completing"] .loader {
+      opacity: 0;
+    }
+
+    #state[state="completed"] .loader {
+      display: none;
+    }
+
+    #state[state="completed"] .card-deck {
+      opacity: 1;
+    }
+
+    #state[state="error"] .loader {
+      color: #721c24;
+    }
+  </style>
+
   <!-- Configure for testing hash authentication -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/hmac-sha1.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/enc-base64.js"></script>
@@ -22,221 +107,183 @@
       };
     </script>
   -->
-
-  <style>
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    #header {
-      font-size: 16px;
-    }
-
-    #header #btn-group button,
-    #peers .peer .peer-info {
-      font-size: 14px;
-      
-    }
-
-    #header {
-      background: #f8f8f8;
-      border-bottom: solid 1px #ccc;
-      padding: 17px 25px 12px;
-    }
-
-    #header .red {
-      color: red;
-    }
-
-    #header .blue {
-      color: blue;
-    }
-
-    #header #btn-group {
-      display: inline-block;
-      vertical-align: top;
-      margin: -5px 0 0 35px;
-    }
-
-    #header #btn-group button {
-      background: #ccc;
-      margin-left: 5px;
-      padding: 5px 12px;
-      cursor: pointer;
-      transition: background .1s ease-in-out;
-      -webkit-transition: background .1s ease-in-out;
-      -moz-transition: background .1s ease-in-out;
-    }
-
-    #header #btn-group button:hover {
-      background: #aaa;
-    }
-
-    #header #btn-group button[disabled] {
-      background: #ccc!important;
-      opacity: .5;
-      cursor: initial;
-    }
-
-    #header.error {
-      color: #d9534f;
-      font-weight: 600;
-    }
-
-    #peers .peer {
-      margin: 15px 15px 0;
-      display: inline-block;
-      vertical-align: top;
-      border: solid 2px blue;
-      width: 280px;
-    }
-
-    #peers .peer.self {
-      border-color: red;
-    }
-
-    #peers .peer,
-    #peers .peer .peer-video {
-      border-top-left-radius: 15px;
-      border-top-right-radius: 15px;
-      background: #ccc;
-    }
-
-    #peers .peer,
-    #peers .peer .peer-info {
-      border-bottom-left-radius: 15px;
-      border-bottom-right-radius: 15px;
-    }
-
-    #peers .peer .peer-video {
-      display: block;
-      width: 100%;
-      height: 200px;
-    }
-
-    #peers .peer.active,
-    #peers .peer.active .peer-video {
-      background: #000;
-    }
-
-    #peers .peer .peer-info {
-      padding: 10px 13px;
-      background: #f8f8f8;
-      color: #686868;
-    }
-
-    #peers .peer .peer-info p {
-      margin: 0;
-      line-height: 25px;
-    }
-
-    #peers .peer .peer-info p b {
-      display: inline-block;
-      vertical-align: middle;
-      width: 58px;
-    }
-
-  </style>
 </head>
 <body>
-  <div id="header">
-    You are highlighted in (<b class="red">Red</b>) and other Peers are in (<b class="blue">Blue</b>).
-
-    <div id="btn-group">
-      <button onclick="connect({ audio: true, video: true })">Connect with Audio & Video</button>
-      <button onclick="connect({ audio: false, video: true })">Connect with Video Only</button>
-      <button onclick="connect({ audio: true, video: false })">Connect with Audio Only</button>
-      <button onclick="connect({ audio: false, video: false })">Connect with None</button>
+  <nav class="navbar navbar-light bg-light">
+    <div class="container">
+      <span class="navbar-text">Select a media option to join the call.</span>
+      <div class="btn-group" role="group" data-toggle="buttons">
+        <label class="btn btn-outline-primary">
+          <input type="radio" name="media" id="media-av" autocomplete="off" checked> Audio & Video
+        </label>
+        <label class="btn btn-outline-primary">
+          <input type="radio" name="media" id="media-a" autocomplete="off"> Audio Only
+        </label>
+        <label class="btn btn-outline-primary">
+          <input type="radio" name="media" id="media-v" autocomplete="off"> Video Only
+        </label>
+        <label class="btn btn-outline-primary">
+          <input type="radio" name="media" id="media-none" autocomplete="off"> None
+        </label>
+      </div>
     </div>
+  </nav>
+
+  <div id="state" class="container" state="completed">
+    <div class="loader">
+      <h2 id="state-title"></h2>
+      <p id="state-error"></p>
+      <div class="progress">
+        <div id="state-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>  
+    </div>
+    <div id="peers" class="card-deck"></div>
   </div>
 
-  <div id="peers"></div>
-
   <script>
-
     var skylink = new Skylink();
+    var progressTimeout = null;
 
-    // Event triggered when Peer has joined the Room.
     skylink.on('peerJoined', function (peerId, peerInfo, isSelf) {
       var element = document.createElement('div');
       element.id = peerId;
-      element.className = 'peer' + (isSelf ? ' self' : '');
-      element.innerHTML = 
-        // Mute <video> element for self Peer only to prevent echo feedback when connected without headphones.
-        '<video id="' + peerId + '-video" class="peer-video" autoplay="true"' + (isSelf ? ' muted="true"' : '') + '></video>' +
-        '<div class="peer-info">' +
-          '<p><b>Peer ID:</b> ' + peerId + '</p>' +
-        // `peerInfo.settings.audio` and `peerInfo.settings.video` will appear as `false` because there is no stream present.
-          '<p><b>Media:</b> <span id="' + peerId + '-info">None</span></p>' +
+      element.className = 'card ' + (isSelf ? 'border-primary' : 'border-secondary') + ' mb-3';
+      element.innerHTML +=
+        '<video id="' + peerId + '-stream" class="card-img-top" autoplay="true"' + (isSelf ? ' muted="true"' : '') + '></video>' + 
+        '<div class="card-body ' + (isSelf ? 'text-primary' : 'text-secondary') + '">' +
+          '<p class="card-text"><b>' + (isSelf ? 'Self' : 'Peer') + ' ID:</b> ' + peerId + '</p>' +
+          '<p class="card-text"><b>Media:</b> <span id="' + peerId + '-media">None</span></p>' +
         '</div>';
 
       document.getElementById('peers').appendChild(element);
     });
 
-    // Event triggered when Peer has sent a stream.
     skylink.on('incomingStream', function (peerId, stream, isSelf, peerInfo) {
-      if (!document.getElementById(peerId)) {
-        return;
-      }
+      if (!document.getElementById(peerId)) return;
 
       if (peerInfo.settings.audio && peerInfo.settings.video) {
-        document.getElementById(peerId + '-info').innerHTML = 'Audio & Video';
+        document.getElementById(peerId + '-media').innerHTML = 'Audio & Video';
 
       } else if (peerInfo.settings.audio) {
-        document.getElementById(peerId + '-info').innerHTML = 'Audio Only';
+        document.getElementById(peerId + '-media').innerHTML = 'Audio Only';
       
       } else if (peerInfo.settings.video) {
-        document.getElementById(peerId + '-info').innerHTML = 'Video Only';
-      
-      } else {
-        document.getElementById(peerId + '-info').innerHTML = 'None';
+        document.getElementById(peerId + '-media').innerHTML = 'Video Only';
       }
 
-      document.getElementById(peerId).className += ' active';
-      attachMediaStream( document.getElementById(peerId + '-video'), stream );
+      document.getElementById(peerId + '-stream').className += ' active';
+      attachMediaStream( document.getElementById(peerId + '-stream'), stream );
     });
 
-    // Event triggered when Peer has left the Room.
     skylink.on('peerLeft', function (peerId, peerInfo, isSelf) {
-      if (!document.getElementById(peerId)) {
+      if (isSelf) {
+        document.getElementById('peers').innerHTML = '';
         return;
       }
+      if (!document.getElementById(peerId)) return;
 
       document.getElementById('peers').removeChild( document.getElementById(peerId) );
     });
 
+    function enableButton (elementId, enabled) {
+      var className = document.getElementById(elementId).parentNode.className;
 
-    // Function to connect to Room with stream settings.
-    function connect (settings) {
-      // Disable buttons from being clickable
-      var elements = document.getElementById('btn-group').childNodes;
+      if (!enabled) {
+        className += ' disabled';
 
-      for (var i = 0; i < elements.length; i++) {
-        if (elements[i].tagName === 'BUTTON') {
-          elements[i].disabled = true;
-        }
+      } else {
+        className = className.replace(/ disabled/g, '');
       }
+
+      document.getElementById(elementId).parentNode.className = className;
+      document.getElementById(elementId).disabled = !enabled;
+    }
+
+    function setProgress (value, error) {
+      if (progressTimeout) {
+        clearTimeout(progressTimeout);
+      }
+
+      if (value > -1) {
+        document.getElementById('state-progress').setAttribute('aria-valuenow', value);
+        document.getElementById('state-progress').setAttribute('style', 'width: ' + value + '%');
+      }
+
+      if (value === -1) {
+        document.getElementById('state').setAttribute('state', 'error');
+        document.getElementById('state-title').innerHTML = error.title;
+        document.getElementById('state-error').innerHTML = error.content;
+        document.getElementById('state-progress').className = 'progress-bar progress-bar-striped bg-danger';
+
+      } else if (value === 0) {
+        document.getElementById('state-title').innerHTML = 'Initialising ...';
+        document.getElementById('state').setAttribute('state', '');
+        enableButton('media-av', false);
+        enableButton('media-a', false);
+        enableButton('media-v', false);
+        enableButton('media-none', false);
+
+      } else if (value === 50) {
+        document.getElementById('state-title').innerHTML = 'Joining Room ...';
+
+      } else if (value === 100) {
+        document.getElementById('state-title').innerHTML = 'Connected!';
+        document.getElementById('state').setAttribute('state', 'completing');
+        
+        progressTimeout = setTimeout(function () {
+          document.getElementById('state').setAttribute('state', 'completed');
+          enableButton('media-av', true);
+          enableButton('media-a', true);
+          enableButton('media-v', true);
+          enableButton('media-none', true);
+        }, 1000);
+      }
+    }
+
+    document.getElementById('media-av').onchange =
+    document.getElementById('media-a').onchange =
+    document.getElementById('media-v').onchange =
+    document.getElementById('media-none').onchange = function () {
+      setProgress(0);
 
       skylink.init(config, function (initErr) {
         if (initErr) {
-          document.getElementById('header').className = 'error';
-          document.getElementById('header').innerHTML = 'Failed initialising: ' + (initErr.error.message || initErr.error);
-          return;
+          return setProgress(-1, {
+            title: 'Init Error',
+            content: initErr.error.message || initErr.error
+          });
+        }
+
+        setProgress(50);
+
+        var settings = {
+          audio: false,
+          video: false
+        };
+
+        if (document.getElementById('media-av').checked) {
+          settings.audio = true;
+          settings.video = true;
+
+        } else if (document.getElementById('media-a').checked) {
+          settings.audio = true;
+
+        } else if (document.getElementById('media-v').checked) {
+          settings.video = true;
         }
 
         skylink.joinRoom(settings, function (joinRoomErr) {
           if (joinRoomErr) {
-            document.getElementById('header').className = 'error';
-            document.getElementById('header').innerHTML = 'Failed connecting to Room: ' + (joinRoomErr.error.message || joinRoomErr.error);
+            return setProgress(-1, {
+              title: 'Join Room Error',
+              content: joinRoomErr.error.message || joinRoomErr.error
+            });
           }
+
+          setProgress(100);
         });
       });
-    }
-
+    };
   </script>
 </body>
 </html>
