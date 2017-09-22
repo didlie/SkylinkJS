@@ -37,7 +37,6 @@
       margin-top: 25px;
       max-width: 300px;
       font-size: 14px;
-      backface-visibility: 
     }
 
     .card-deck .card .card-img-top {
@@ -113,18 +112,10 @@
     <div class="container">
       <span class="navbar-text">Select a media option to join the call.</span>
       <div class="btn-group" role="group" data-toggle="buttons">
-        <label class="btn btn-outline-primary">
-          <input type="radio" name="media" id="media-av" autocomplete="off" checked> Audio & Video
-        </label>
-        <label class="btn btn-outline-primary">
-          <input type="radio" name="media" id="media-a" autocomplete="off"> Audio Only
-        </label>
-        <label class="btn btn-outline-primary">
-          <input type="radio" name="media" id="media-v" autocomplete="off"> Video Only
-        </label>
-        <label class="btn btn-outline-primary">
-          <input type="radio" name="media" id="media-none" autocomplete="off"> None
-        </label>
+        <label class="btn btn-outline-primary"><input type="radio" name="media" id="media-av" autocomplete="off" checked>Audio & Video</label>
+        <label class="btn btn-outline-primary"><input type="radio" name="media" id="media-a" autocomplete="off">Audio Only </label>
+        <label class="btn btn-outline-primary"><input type="radio" name="media" id="media-v" autocomplete="off">Video Only</label>
+        <label class="btn btn-outline-primary"><input type="radio" name="media" id="media-none" autocomplete="off">None</label>
       </div>
     </div>
   </nav>
@@ -135,7 +126,7 @@
       <p id="state-error"></p>
       <div class="progress">
         <div id="state-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-      </div>  
+      </div>
     </div>
     <div id="peers" class="card-deck"></div>
   </div>
@@ -179,34 +170,25 @@
       if (isSelf) {
         document.getElementById('peers').innerHTML = '';
         return;
-      }
-      if (!document.getElementById(peerId)) return;
+
+      } else if (!document.getElementById(peerId)) return;
 
       document.getElementById('peers').removeChild( document.getElementById(peerId) );
     });
 
+
     function enableButton (elementId, enabled) {
       var className = document.getElementById(elementId).parentNode.className;
-
-      if (!enabled) {
-        className += ' disabled';
-
-      } else {
-        className = className.replace(/ disabled/g, '');
-      }
+      className = enabled ? className.replace(/ disabled/g, '') : className + ' disabled';
 
       document.getElementById(elementId).parentNode.className = className;
       document.getElementById(elementId).disabled = !enabled;
     }
 
+
     function setProgress (value, error) {
       if (progressTimeout) {
         clearTimeout(progressTimeout);
-      }
-
-      if (value > -1) {
-        document.getElementById('state-progress').setAttribute('aria-valuenow', value);
-        document.getElementById('state-progress').setAttribute('style', 'width: ' + value + '%');
       }
 
       if (value === -1) {
@@ -214,8 +196,13 @@
         document.getElementById('state-title').innerHTML = error.title;
         document.getElementById('state-error').innerHTML = error.content;
         document.getElementById('state-progress').className = 'progress-bar progress-bar-striped bg-danger';
+        return;
+      }
 
-      } else if (value === 0) {
+      document.getElementById('state-progress').setAttribute('aria-valuenow', value);
+      document.getElementById('state-progress').setAttribute('style', 'width: ' + value + '%');
+
+      if (value === 0) {
         document.getElementById('state-title').innerHTML = 'Initialising ...';
         document.getElementById('state').setAttribute('state', '');
         enableButton('media-av', false);
@@ -229,7 +216,7 @@
       } else if (value === 100) {
         document.getElementById('state-title').innerHTML = 'Connected!';
         document.getElementById('state').setAttribute('state', 'completing');
-        
+
         progressTimeout = setTimeout(function () {
           document.getElementById('state').setAttribute('state', 'completed');
           enableButton('media-av', true);
@@ -239,6 +226,7 @@
         }, 1000);
       }
     }
+
 
     document.getElementById('media-av').onchange =
     document.getElementById('media-a').onchange =

@@ -11,14 +11,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.5/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
   <style>
-    .video {
-      background: #ccc;
-    }
-
-    .video.active {
-      background: #000;
-    }
-
     .btn {
       cursor: pointer;
     }
@@ -27,23 +19,58 @@
       cursor: initial!important;
     }
 
+    .card-deck .card {
+      margin-top: 25px;
+      max-width: 300px;
+      font-size: 14px;
+    }
+
+    .card-deck .card .card-img-top {
+      background: #aaa;
+      width: 100%;
+      height: 200px;
+    }
+
+    .card-deck .card .card-img-top.active {
+      background: #000;
+    }
+
+    .card-deck .card .card-body {
+      position: relative;
+    }
+
+    .card-deck .card .card-body .btn {
+      position: absolute;
+      z-index: 3;
+      top: -55px;
+      right: 15px;
+    }
+
     .modal .modal-dialog .modal-content .modal-body {
       padding-bottom: 25px;
     }
 
-    .modal .modal-dialog .modal-content .modal-body .video-wrapper {
+    .modal .modal-dialog .modal-content .modal-body.alert {
+      display: none;
+      padding-bottom: 19px;
+      border-radius: 0;
+      border: 0;
+    }
+
+    .modal .modal-dialog .modal-content .modal-body .video {
       margin-bottom: 15px;
     }
 
-    .modal .modal-dialog .modal-content .modal-body .video-wrapper,
-    .modal .modal-dialog .modal-content .modal-body .video-wrapper .video {
+    .modal .modal-dialog .modal-content .modal-body .video,
+    .modal .modal-dialog .modal-content .modal-body .video .video-stream {
       position: relative;
       z-index: 1;
-      width: 468px;
-      height: 250px;
+      width: 100%;
+      height: 285px;
+      background: #000;
     }
 
-    .modal .modal-dialog .modal-content .modal-body .video-wrapper .video-cover {
+    .modal .modal-dialog .modal-content .modal-body .video .video-cover {
       position: absolute;
       z-index: 2;
       top: 0;
@@ -52,38 +79,66 @@
       bottom: 0;
       font-weight: 600;
       text-align: center;
-      padding: 105px 15px;
+      padding: 125px 15px;
       color: #888;
+      opacity: 1;
+      background: #aaa;
+      transition: opacity 1s ease-in-out;
+      -webkit-transition: opacity 1s ease-in-out;
+      -moz-transition: opacity 1s ease-in-out;
+    }
+
+    .modal .modal-dialog .modal-content .modal-body .video.active .video-cover {
+      opacity: 0;
     }
 
     .modal .modal-dialog .modal-content .modal-body .input-group-addon,
     .modal .modal-dialog .modal-content .modal-body .input-group .form-control {
-      border-radius: 0;
+      border: 0;
+      background: #fff;
     }
 
     .modal .modal-dialog .modal-content .modal-body .input-group-addon {
       width: 120px;
+      padding-left: 2px;
       font-size: 14px;
       font-weight: 600;
-      border: 0;
-      background: 0;
-      padding-left: 2px;
     }
 
-    .modal .modal-dialog .modal-content .modal-body .input-group .form-control {
-      border: 0;
-    }
-
-    #selector .modal-dialog .modal-content .modal-header .close {
+    #selector[state=""] .modal-dialog .modal-content .modal-header .close,
+    #selector[state="listing"] .modal-dialog .modal-content .modal-header .close,
+    #selector[state="listed"] .modal-dialog .modal-content .modal-header .close,
+    #selector[state="error"] .modal-dialog .modal-content .modal-header .close,
+    #selector[state="connecting"] .modal-dialog .modal-content .modal-header .close {
       display: none;
     }
 
-    #selector[state="connected"] .modal-dialog .modal-content .modal-header .close {
-      display: inline-block;
+    #selector[state=""] .modal-dialog .modal-content .modal-body,
+    #selector[state=""] .modal-dialog .modal-content .modal-footer,
+    #selector[state="error"] .modal-dialog .modal-content .modal-body,
+    #selector[state="error"] .modal-dialog .modal-content .modal-footer {
+      display: none;
     }
 
-    #selector[state="error"] .modal-dialog .modal-content {
+    #selector[state="error"] .modal-dialog .modal-content,
+    #selector[state="stream-error"] .modal-dialog .modal-content {
       color: #dc3545!important;
+    }
+
+    #selector[state=""] .modal-dialog .modal-content .modal-body.alert,
+    #selector[state="error"] .modal-dialog .modal-content .modal-body.alert,
+    #selector[state="stream-error"] .modal-dialog .modal-content .modal-body.alert {
+      display: block!important;
+    }
+
+    #selector[state=""] .modal-dialog .modal-content .modal-body.alert,
+    #selector[state="error"] .modal-dialog .modal-content .modal-body.alert {
+      background: #fff;
+      padding-bottom: 0;
+    }
+
+    #selector[state=""] .modal-dialog .modal-content .modal-body.alert {
+      color: #888;
     }
 
     #selector[state="error"] .modal-dialog .modal-content .modal-footer {
@@ -115,44 +170,49 @@
 <body>
   <div id="peers" class="container card-deck"></div>
 
-  <div id="selector" state="" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="selector-title" aria-hidden="true">
+  <div id="selector" state="" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
-
       <div class="modal-content">
+
         <div class="modal-header">
-          <h5 id="selector-title" class="modal-title">Select Audio & Video Source to Join Call</h5>
+          <h5 class="modal-title">Select Audio & Video Source to Join Call</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
 
+        <div id="selector-message" class="modal-body alert alert-danger" role="alert">Initialising App ...</div>
+
         <div id="selector-content" class="modal-body">
-          <div class="video-wrapper">
-            <video id="selector-stream" class="video" autoplay="true"></video>
+          <div class="video">
+            <video id="selector-stream" class="video-stream" autoplay="true"></video>
             <div class="video-cover">No Media</div>
           </div>
+
           <div class="input-group">
-            <span id="audio-input-title" class="input-group-addon">Microphone:</span>
-            <select id="audio-input"  class="form-control" aria-describedby="audio-input-title">
+            <span class="input-group-addon">Microphone:</span>
+            <select id="mic-source"  class="form-control" disabled="true">
               <option value="false">None</option>
             </select>
           </div>
+
           <div class="input-group">
-            <span id="video-input-title" class="input-group-addon">Camera:</span>
-            <select id="video-input"  class="form-control" aria-describedby="video-input-title">
+            <span class="input-group-addon">Camera:</span>
+            <select id="camera-source"  class="form-control" disabled="true">
               <option value="false">None</option>
             </select>
           </div>
+
           <div class="input-group">
-            <span id="audio-output-title" class="input-group-addon">Speaker:</span>
-            <select id="audio-output"  class="form-control" aria-describedby="audio-output-title" disabled>
+            <span class="input-group-addon">Speaker:</span>
+            <select id="speaker-source" class="form-control" disabled="true">
               <option value="null">Default</option>
             </select>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button id="selector-preview" type="button" class="btn btn-outline-primary">Get Stream First</button>
+          <button id="selector-preview" type="button" class="btn btn-outline-primary">Get Media First</button>
           <button id="selector-connect" type="button" class="btn btn-primary" disabled="true">Then Connect</button>
         </div>
       </div>
@@ -161,283 +221,264 @@
 
   <script>
     var skylink = new Skylink();
-    var pendingStream = null;
-    var connected = false;
-
-    $('#selector').on('hide.bs.modal', function () {
-      attachMediaStream( document.getElementById('selector-stream'), null );
-    });
-
-    $('#selector').on('hidden.bs.modal', function () {
-      if (!connected) {
-        $('#selector').modal('show');
-      }
-    });
-
-    $('#selector').modal('show');
-
-    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-      if (document.getElementById('selector-stream') && document.getElementById('selector-stream').setSinkId) {
-        document.getElementById('audio-output').disabled = false;
-        document.getElementById('audio-output').innerHTML = '';
-      }
-
-      navigator.mediaDevices.enumerateDevices().then(function (sources) {
-        sources.forEach(function (sourceItem, index) {
-          var elementId = null;
-
-          if (['audio', 'audioinput'].indexOf(sourceItem.kind) > -1) {
-            elementId = 'audio-input';
-
-          } else if (['video', 'videoinput'].indexOf(sourceItem.kind) > -1) {
-            elementId = 'video-input';
-
-          } else if (['audiooutput'].indexOf(sourceItem.kind) > -1) {
-            elementId = 'audio-output';
-          }
-
-          if (elementId && !document.getElementById(elementId).disabled) {
-            var option = document.createElement('option');
-            option.value = JSON.stringify({
-              deviceId: sourceItem.deviceId || sourceItem.sourceId || sourceItem.id
-            });
-            option.innerHTML = sourceItem.label || sourceItem.kind + '_' + index;
-
-            document.getElementById(elementId).appendChild(option);
-          }
-        });
-      });
-    }
-
-    document.getElementById('selector-preview').onclick = function () {
-      var audioInputDevice = JSON.parse( document.getElementById('audio-input').value );
-      var audioOutputDevice = JSON.parse( document.getElementById('video-input').value );
-      var videoInputDevice = JSON.parse( document.getElementById('audio-output').value );
-
-      if (!audioInputDevice && !videoInputDevice) {
-        return;
-      }
-
-      navigator.getUserMedia({
-        audio: audioInputDevice,
-        video: videoInputDevice
-
-      }, function (stream) {
-        pendingStream = stream;
-        attachMediaStream( document.getElementById('selector-stream'), stream );
-
-      }, function (error) {});
-    };
-
-    /*var skylink = new Skylink();
     var streams = {
-      preview: null,
-      current: null
+      pending: null,
+      current: null,
+      settings: {
+        pending: {},
+        current: { audio: false, video: false, sinkId: null }
+      }
+    };
+    var speaker = {
+      sinkId: null,
+      supported: typeof document.getElementById('selector-stream').setSinkId === 'function'
     };
 
-    // Event triggered when Peer has joined the Room.
     skylink.on('peerJoined', function (peerId, peerInfo, isSelf) {
       var element = document.createElement('div');
       element.id = peerId;
-      element.className = 'peer' + (isSelf ? ' self' : '');
-      element.innerHTML =
-        '<video id="' + peerId + '-video" class="peer-video"></video>' +
-        '<div class="peer-info">' +
-          '<p><b>Peer ID' + (isSelf ? ' (self)' : '') + ':</b> <span>' + peerId + '</span></p>' +
-        // `peerInfo.settings.audio` and `peerInfo.settings.video` will appear as `false` because there is no stream present.
-          '<p><b>Media:</b> <span id="' + peerId + '-info">None</span></p>'
+      element.className = 'card ' + (isSelf ? 'border-primary' : 'border-secondary') + ' mb-3';
+      element.innerHTML +=
+        '<video id="' + peerId + '-stream" class="card-img-top" autoplay="true"' + (isSelf ? ' muted="true"' : '') + '></video>' + 
+        '<div class="card-body ' + (isSelf ? 'text-primary' : 'text-secondary') + '">' +
+          (isSelf ? '<button id="selector-change" type="button" class="btn btn-primary">Change Media</button>' : '') +
+          '<p class="card-text"><b>' + (isSelf ? 'Self' : 'Peer') + ' ID:</b> ' + peerId + '</p>' +
+          '<p class="card-text"><b>Media:</b> <span id="' + peerId + '-media">None</span></p>' +
         '</div>';
 
       document.getElementById('peers').appendChild(element);
-      renderAudioOutput();
+
+      if (isSelf) {
+        document.getElementById('selector-change').onclick = function () {
+          $('#selector').modal('show');
+        };
+      }
     });
 
-    // Event triggered when Peer has sent a stream.
     skylink.on('incomingStream', function (peerId, stream, isSelf, peerInfo) {
-      if (!document.getElementById(peerId)) {
-        return;
-      }
+      if (!document.getElementById(peerId)) return;
 
       if (peerInfo.settings.audio && peerInfo.settings.video) {
-        document.getElementById(peerId + '-info').innerHTML = 'Audio & Video';
+        document.getElementById(peerId + '-media').innerHTML = 'Audio & Video';
 
       } else if (peerInfo.settings.audio) {
-        document.getElementById(peerId + '-info').innerHTML = 'Audio Only';
+        document.getElementById(peerId + '-media').innerHTML = 'Audio Only';
       
       } else if (peerInfo.settings.video) {
-        document.getElementById(peerId + '-info').innerHTML = 'Video Only';
-      
-      } else {
-        document.getElementById(peerId + '-info').innerHTML = 'None';
+        document.getElementById(peerId + '-media').innerHTML = 'Video Only';
       }
 
-      document.getElementById(peerId + '-video').className = 'peer-video active';
-      attachMediaStream( document.getElementById(peerId + '-video'), stream );
+      document.getElementById(peerId + '-stream').className += ' active';
+      attachMediaStream( document.getElementById(peerId + '-stream'), stream );
+
+      if (speaker.supported) {
+        document.getElementById(peerId + '-stream').setSinkId(speaker.sinkId);
+      }
     });
 
-    // Event triggered when Peer stream has changed.
-    skylink.on('streamEnded', function (peerId) {
-      document.getElementById(peerId + '-info').innerHTML = 'None';
-      document.getElementById(peerId + '-video').className = 'peer-video';
-    });
-
-    // Event triggered when Peer has left the Room.
     skylink.on('peerLeft', function (peerId, peerInfo, isSelf) {
-      if (!document.getElementById(peerId)) {
+      if (isSelf) {
+        document.getElementById('peers').innerHTML = '';
         return;
-      }
+
+      } else if (!document.getElementById(peerId)) return;
 
       document.getElementById('peers').removeChild( document.getElementById(peerId) );
     });
 
 
-    // Function that gets the preview Stream media and sends it when self Peer chooses to.
-    function preview () {
-      var settings = {
-        audio: JSON.parse( document.getElementById('audio-input').value ),
-        video: JSON.parse( document.getElementById('video-input').value )
-      };
+    function setState (state, error) {
+      document.getElementById('selector').setAttribute('state', state);
+      document.getElementById('selector-message').innerHTML = '';
 
-      // Prevent from double-clicks.
-      document.getElementById('btn-preview').disabled = true;
-      document.getElementById('btn-send').disabled = true;
-      document.getElementById('error').innerHTML = '';
+      if (['', 'stream-error', 'error'].indexOf(state) > -1) {
+        document.getElementById('selector-message').innerHTML = '<b>' + error.title + '</b> ' + error.content;
 
-      // Stop existing previewed stream.
-      if (streams.preview) {
+        if (state === 'stream-error') {
+          document.getElementById('selector-preview').disabled = false;
+          document.getElementById('camera-source').disabled = false;
+          document.getElementById('mic-source').disabled = false;
+          document.getElementById('speaker-source').disabled = !speaker.supported;
+          document.getElementById('selector-connect').disabled = Object.keys( skylink.getPeersInRoom() ).length === 0;
+        }
+
+      } else if (['listing', 'fetching', 'connecting'].indexOf(state) > -1) {
+        document.getElementById('selector-preview').disabled = true;
+        document.getElementById('selector-connect').disabled = true;
+        document.getElementById('camera-source').disabled = true;
+        document.getElementById('mic-source').disabled = true;
+        document.getElementById('speaker-source').disabled = true;
+
+        if (state === 'fetching') {
+          stopPreview();
+        }
+
+      } else if (['fetched', 'connected', 'listed'].indexOf(state) > -1) {
+        document.getElementById('selector-preview').disabled = false;
+        document.getElementById('camera-source').disabled = false;
+        document.getElementById('mic-source').disabled = false;
+        document.getElementById('speaker-source').disabled = !speaker.supported;
+        document.getElementById('selector-connect').disabled = ['connected', 'listed'].indexOf(state) > -1;
+        document.getElementById('selector-connect').innerHTML = 'Then ' + (Object.keys( skylink.getPeersInRoom() ).length > 0 ? 'Replace' : 'Connect');
+
+        if (state === 'fetched') {
+          document.getElementById('selector-stream').parentNode.className = 'video' + (streams.pending ? ' active' : '');
+          attachMediaStream( document.getElementById('selector-stream'), streams.pending );
+          
+          if (speaker.supported) {
+            document.getElementById('selector-stream').setSinkId(speaker.sinkId);
+          }
+
+        } else if (state === 'connected') {
+          if (speaker.supported) {
+            Object.keys( skylink.getPeersInRoom() ).forEach(function (peerId) {
+              document.getElementById(peerId + '-stream').setSinkId(speaker.sinkId);
+            });
+          }
+
+          $('#selector').modal('hide');
+        }
+      }
+    }
+
+
+    function stopPreview () {
+      if (streams.pending) {
         try {
-          streams.preview.getTracks().forEach(function (track) {
+          streams.pending.getAudioTracks().concat( streams.pending.getVideoTracks() ).forEach(function (track) {
             track.stop();
           });
+
         } catch (error) {
-          streams.preview.stop();
+          streams.pending.stop();
         }
+        streams.pending = null;
       }
 
-      if (settings.audio || settings.video) {
-        navigator.getUserMedia(settings, function (stream) {
-          streams.preview = stream;
-
-          document.getElementById('btn-preview').disabled = false;
-          document.getElementById('btn-send').disabled = false;
-          document.getElementById('preview').className = 'active';
-
-          attachMediaStream( document.getElementById('preview-video'), stream );
-
-        }, function (error) {
-          document.getElementById('btn-preview').disabled = false;
-          document.getElementById('error').innerHTML = 'Failed retrieving stream: ' + error.message;
-        });
-
-      } else {
-        document.getElementById('btn-preview').disabled = false;
-        document.getElementById('btn-send').disabled = false;
-        document.getElementById('preview').className = '';
-
-        attachMediaStream( document.getElementById('preview-video'), null );
-      }
+      attachMediaStream( document.getElementById('selector-stream'), null );
     }
 
-    
-    // Function that sends the currently previewed Stream.
-    function send () {
-      // Set with the Stream we are about to send.
-      streams.current = streams.preview;
-      streams.preview = null;
 
-      // Prevent from double-clicks.
-      document.getElementById('btn-preview').disabled = true;
-      document.getElementById('btn-send').disabled = true;
-      document.getElementById('error').innerHTML = '';
+    $('#selector').on('show.bs.modal', function () {
+      document.getElementById('selector-stream').parentNode.className = 'video' + (streams.current ? ' active' : '');
+      document.getElementById('mic-source').value = JSON.stringify(streams.settings.current.audio);
+      document.getElementById('camera-source').value = JSON.stringify(streams.settings.current.video);
+      document.getElementById('speaker-source').value = streams.settings.current.sinkId;
+      attachMediaStream( document.getElementById('selector-stream'), streams.current );
+    });
 
-      // Stop the current sending stream and start sending the new stream.
-      skylink.stopStream();
+    $('#selector').on('hide.bs.modal', function () {
+      stopPreview();
+    });
 
-      var refreshCallback = function () {
-        // Start connecting to the Room if user is not in the Room.
-        if (Object.keys(skylink.getPeersInRoom()).length === 0) {
-          skylink.init(config, function (initErr) {
-            if (initErr) {
-              document.getElementById('btn-preview').disabled = false;
-              document.getElementById('btn-send').disabled = false;
-              document.getElementById('error').innerHTML = 'Failed initialising: ' + (initErr.error.message || initErr.error);
-              return;
-            }
+    $('#selector').on('hidden.bs.modal', function () {
+      if (Object.keys( skylink.getPeersInRoom() ).length === 0) {
+        $('#selector').modal('show');
+      }
+    });
 
-            skylink.joinRoom(function (joinRoomErr) {
-              document.getElementById('btn-preview').disabled = false;
-
-              if (joinRoomErr) {
-                document.getElementById('btn-send').disabled = false;
-                document.getElementById('error').innerHTML = 'Failed connecting to Room: ' + (joinRoomErr.error.message || joinRoomErr.error);
-                return;
-              }
-
-              document.getElementById('btn-send').disabled = true;
-              document.getElementById('btn-send').innerHTML = 'Replace';
-            });
-          });
-        } else {
-          document.getElementById('btn-preview').disabled = false;
-          document.getElementById('btn-send').disabled = true;    
-        }
+    document.getElementById('selector-preview').onclick = function () {
+      var settings = {
+        audio: JSON.parse( document.getElementById('mic-source').value ),
+        video: JSON.parse( document.getElementById('camera-source').value ),
+        sinkId: document.getElementById('speaker-source').value
       };
 
-      if (streams.current) {
-        skylink.sendStream(streams.current, refreshCallback);
+      setState('fetching');
+
+      if (!settings.audio && !settings.video) {
+        return setState('stream-error', {
+          title: 'Media Error',
+          content: 'Please select 1 microphone or camera source!'
+        });
+      }
+
+      navigator.getUserMedia(settings, function (stream) {
+        streams.pending = stream;
+        streams.settings.pending = settings;
+        setState('fetched');
+ 
+      }, function (error) {
+        setState('stream-error', {
+          title: 'Media Error',
+          content: 'Please select 1 microphone or camera source!'
+        });
+      });
+    };
+
+    document.getElementById('selector-connect').onclick = function () {
+      setState('connecting');
+
+      skylink.stopStream();
+      skylink.sendStream(streams.pending, function () {
+        streams.current = streams.pending;
+        streams.settings.current = streams.settings.pending;
+        streams.pending = null;
+        streams.settings.pending = null;
+
+        if (Object.keys( skylink.getPeersInRoom() ).length === 0) {
+          skylink.joinRoom(function (joinRoomErr) {
+            if (joinRoomErr) {
+              return setState('stream-error', {
+                title: 'Join Room Error',
+                content: joinRoomErr.error.message || joinRoomErr.error
+              });
+            }
+
+            setState('connected');
+          });
+
+        } else {
+          setState('connected');
+        }
+      });
+    };
+
+
+    $('#selector').modal('show');
+
+    skylink.init(config, function (initErr) {
+      if (initErr) {
+        return setState('error', {
+          title: 'Init Error',
+          content: initErr.error.message || initErr.error
+        });
+      }
+
+      setState('listing');
+
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        navigator.mediaDevices.enumerateDevices().then(function (sources) {
+          sources.forEach(function (sourceItem, index) {
+            var deviceId = sourceItem.deviceId || sourceItem.sourceId || sourceItem.id;
+            var option = document.createElement('option');
+            option.innerHTML = sourceItem.label || sourceItem.kind + '_' + index;
+
+            if (['audio', 'audioinput'].indexOf(sourceItem.kind) > -1) {
+              option.value =  JSON.stringify({
+                deviceId: deviceId
+              });
+              document.getElementById('mic-source').appendChild(option);
+
+            } else if (['video', 'videoinput'].indexOf(sourceItem.kind) > -1) {
+              option.value =  JSON.stringify({
+                deviceId: deviceId
+              });
+              document.getElementById('camera-source').appendChild(option);
+
+            } else if (['audiooutput'].indexOf(sourceItem.kind) > -1) {
+              option.value = deviceId;
+              document.getElementById('speaker-source').appendChild(option);
+            }
+          });
+
+          setState('listed');
+        });
 
       } else {
-        skylink.refreshConnection(refreshCallback);
+        setState('listed');
       }
-    }
-
-    // Function that renders the selected audio output sink ID.
-    // Returns [Boolean] if `setSinkId()` is supported or not.
-    function renderAudioOutput () {
-      if (typeof document.getElementById('preview-video').setSinkId !== 'function') {
-        return;
-      }
-
-      Object.keys( skylink.getPeersInRoom() ).forEach(function (peerId) {
-        document.getElementById(peerId + '-video').setSinkId( document.getElementById('audio-output').value || 'default' );
-      });
-
-      document.getElementById('preview-video').setSinkId( document.getElementById('audio-output').value || 'default' );
-      return true;
-    }
-
-
-    // Retrieve the list of audio input, output and video input sources.
-    skylink.getStreamSources(function (sources) {
-      Object.keys(sources).forEach(function (trackType) {
-        sources[trackType].input.forEach(function (item) {
-          var option = document.createElement('option');
-          option.value = JSON.stringify({ deviceId: item.deviceId });
-          option.innerHTML = item.label;
-
-          document.getElementById(trackType + '-input').appendChild(option);
-        });
-      });
-
-      // Render the list of audio output sources only if .setSinkId() is supported!
-      if (renderAudioOutput()) {
-        document.getElementById('audio-output').innerHTML = '';
-
-        sources.audio.output.forEach(function (item) {
-          var option = document.createElement('option');
-          option.value = item.deviceId;
-          option.innerHTML = item.label;
-
-          document.getElementById('audio-output').appendChild(option);
-        });
-
-        // Start rendering the correct audio output speaker if selection has switched.
-        document.getElementById('audio-output').disabled = false;
-        document.getElementById('audio-output').onchange = function () {
-          renderAudioOutput();
-        };
-      }
-    });*/
+    });
   </script>
 
 </body>
