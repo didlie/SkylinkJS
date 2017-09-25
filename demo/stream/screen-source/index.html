@@ -1,531 +1,448 @@
 <html lang="en">
 <head>
-  <title>Stream : Switching and Selecting Audio & Video Source</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Stream : Sharing your Screen</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-  <!-- Configure for testing hash authentication -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/hmac-sha1.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/enc-base64.js"></script>
+<!-- Configure for styling for demo purposes -->
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"> 
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.5/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+<style>
+  .btn {
+    cursor: pointer;
+  }
 
-  <!-- Configure for hosting from repository -->
-  <script src="../../../publish/skylink.complete.js"></script>
-  <script src="../../config.js"></script>
+  .btn[disabled] {
+    cursor: initial!important;
+  }
 
-  <!-- Configure for hosting individually:
-    <script src="https://cdn.temasys.io/skylink/skylinkjs/0.6.x/skylink.complete.js"></script>
-    <script>
-      var config = {
-        appKey: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
-        defaultRoom: 'audio-video'
-      };
-    </script>
-  -->
+  .card-deck .card {
+    margin-top: 25px;
+    max-width: 300px;
+    font-size: 14px;
+  }
 
-  <style>
+  .card-deck .card .card-img-top {
+    background: #aaa;
+    width: 100%;
+    height: 200px;
+  }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      overflow: hidden;
-      font-size: 14px;
-    }
+  .card-deck .card .card-img-top.active {
+    background: #000;
+  }
 
-    .container .container-panel {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      display: inline-block;
-      vertical-align: top;
-      height: 100%;
-      width: 100%;
-      overflow-y: auto;
-    }
+  .card-deck .card .card-body {
+    position: relative;
+  }
 
-    .container .container-panel.left {
-      width: 450px;
-      left: 0;
-      padding: 20px 15px;
-    }
+  .modal .modal-dialog .modal-content .modal-body {
+    padding-bottom: 25px;
+  }
 
-    .container .container-panel.left #preview {
-      position: relative;
-      width: 420px;
-      height: 250px;
-      padding-bottom: 15px;
-    }
+  .modal .modal-dialog .modal-content .modal-body.alert {
+    display: none;
+    padding-bottom: 19px;
+    border-radius: 0;
+    border: 0;
+  }
 
-    .container .container-panel.left #preview .video-video,
-    .container .container-panel.right .peer .peer-video {
-      background: #aaa;
-      width: 100%;
-    }
+  .modal .modal-dialog .modal-content .modal-body .video {
+    margin-bottom: 15px;
+  }
 
-    .container .container-panel.left #preview .video-cover {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 2;
-      display: block;
-      padding-top: 105px;
-      background: rgba(255, 255, 255, .5);
-      text-align: center;
-      font-weight: 600;
-      color: #888;
-    }
+  .modal .modal-dialog .modal-content .modal-body .video,
+  .modal .modal-dialog .modal-content .modal-body .video .video-stream {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 285px;
+    background: #000;
+  }
 
-    .container .container-panel.left #preview .video-video {
-      position: relative;
-      z-index: 1;
-      height: 100%;
-    }
+  .modal .modal-dialog .modal-content .modal-body .video .video-cover {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: 600;
+    text-align: center;
+    padding: 125px 15px;
+    color: #888;
+    opacity: 1;
+    background: #aaa;
+    transition: opacity 1s ease-in-out;
+    -webkit-transition: opacity 1s ease-in-out;
+    -moz-transition: opacity 1s ease-in-out;
+  }
 
-    .container .container-panel.left #preview.active .video-cover {
-      display: none;
-    }
+  .modal .modal-dialog .modal-content .modal-body .video.active .video-cover {
+    opacity: 0;
+  }
 
-    .container .container-panel.left #preview.active .video-video,
-    .container .container-panel.right .peer .peer-video.active {
-      background: #000;
-    }
+  .modal .modal-dialog .modal-content .modal-body .input-group .input-group-addon,
+  .modal .modal-dialog .modal-content .modal-body .input-group .form-control {
+    border: 0;
+    background: #fff;
+  }
 
-    .container .container-panel.left .panel-section {
-      display: block;
-      margin: 15px 0 0;
-    }
+  .modal .modal-dialog .modal-content .modal-body .input-group .input-group-addon {
+    width: 120px;
+    padding-left: 2px;
+    font-size: 14px;
+    font-weight: 600;
+  }
 
-    .container .container-panel.left .panel-section b {
-      display: inline-block;
-      vertical-align: middle;
-      width: 200px;
-      font-size: 12px;
-      color: #484848;
-    }
+  .modal .modal-dialog .modal-content .modal-body .input-group input[type="checkbox"].form-control {
+    margin: 9px 0 0 5px;
+  }
 
-    .container .container-panel.left .panel-section select {
-      margin-left: 50px;
-      width: 165px;
-    }
+  .modal .modal-dialog .modal-content .modal-body .input-group.disabled .input-group-addon {
+    color: #aaa;
+  }
 
-    .container .container-panel.left .btn-group {
-      margin: 0 0 15px;
-      padding: 25px 0 15px;
-      border-bottom: solid 1px #e8e8e8;
-    }
+  #selector[state=""] .modal-dialog .modal-content .modal-body,
+  #selector[state=""] .modal-dialog .modal-content .modal-footer,
+  #selector[state="ready-error"] .modal-dialog .modal-content .modal-body,
+  #selector[state="ready-error"] .modal-dialog .modal-content .modal-footer {
+    display: none;
+  }
 
-    .container .container-panel.left .btn-group #error {
-      margin: 15px 0;
-      color: #d9534f;
-    }
+  #selector[state="error"] .modal-dialog .modal-content {
+    color: #dc3545!important;
+  }
 
-    .container .container-panel.left .btn-group button {
-      display: inline-block;
-      vertical-align: top;
-      margin: 0 9px 0 0;
-      padding: 7px 25px;
-      background: #01B0CF;
-      border: solid 1px #01B0CF;
-      color: #fff;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background .1s ease-in-out;
-      -webkit-transition: background .1s ease-in-out;
-      -moz-transition: background .1s ease-in-out;
-    }
+  #selector[state=""] .modal-dialog .modal-content .modal-body.alert,
+  #selector[state="ready-error"] .modal-dialog .modal-content .modal-body.alert,
+  #selector[state="fetch-error"] .modal-dialog .modal-content .modal-body.alert,
+  #selector[state="connect-error"] .modal-dialog .modal-content .modal-body.alert {
+    display: block!important;
+  }
 
-    .container .container-panel.left .btn-group button:hover {
-      background: #0297B1;
-    }
+  #selector[state=""] .modal-dialog .modal-content .modal-body.alert,
+  #selector[state="ready-error"] .modal-dialog .modal-content .modal-body.alert {
+    background: #fff;
+    padding-bottom: 0;
+  }
 
-    .container .container-panel.left .btn-group button.preview {
-      color: #01B0CF;
-      background: #fff;
-    }
+  #selector[state=""] .modal-dialog .modal-content .modal-body.alert {
+    color: #888;
+  }
 
-    .container .container-panel.left .btn-group button.preview:hover {
-      background: #eee;
-    }
+  #selector[state="ready-error"] .modal-dialog .modal-content .modal-footer {
+    display: none;
+  }
 
-    .container .container-panel.left .btn-group button[disabled] {
-      cursor: initial;
-      opacity: .5;
-      background: #01B0CF!important;
-    }
+  #selector #selector-warning {
+    font-size: 14px;
+    display: none;
+  }
 
-    .container .container-panel.left .btn-group button[disabled].preview {
-      background: #fff!important;
-    }
+  #selector #selector-warning.show {
+    display: block;
+  }
+</style>
 
-    .container .container-panel.right {
-      left: 450px;
-      right: 0;
-      background: #f8f8f8;
-      border-left: solid 1px #ccc;
-    }
+<!-- Configure for testing hash authentication -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/hmac-sha1.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/enc-base64.js"></script>
 
-    .container .container-panel.right .peer {
-      display: inline-block;
-      vertical-align: top;
-      width: 300px;
-      margin: 15px;
-      background: #fff;
-      border: solid 1px #e8e8e8;
-    }
+<!-- Configure for promise polyfill for IE to enumerateDevices() -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/4.1.1/es6-promise.min.js"></script>
 
-    .container .container-panel.right .peer.self {
-      border-color: red;
-    }
+<!-- Configure for hosting from repository -->
+<script src="../../../publish/skylink.complete.js"></script>
+<script src="../../config.js"></script>
 
-    .container .container-panel.right .peer,
-    .container .container-panel.right .peer .peer-video {
-      border-top-left-radius: 7px;
-      border-top-right-radius: 7px;
-    }
-
-    .container .container-panel.right .peer,
-    .container .container-panel.right .peer .peer-info {
-      border-bottom-left-radius: 7px;
-      border-bottom-right-radius: 7px;
-    }
-
-    .container .container-panel.right .peer .peer-video {
-      height: 180px;
-    }
-
-    .container .container-panel.right .peer .peer-info {
-      padding: 5px 12px;
-      color: #484848;
-    }
-
-    .container .container-panel.right .peer .peer-info p {
-      margin: 3px 0;
-      line-height: 21px;
-    }
-
-    .container .container-panel.right .peer .peer-info p b {
-      display: inline-block;
-      vertical-align: middle;
-      width: 95px;
-    }
-    
-  </style>
+<!-- Configure for hosting individually:
+  <script src="https://cdn.temasys.io/skylink/skylinkjs/0.6.x/skylink.complete.js"></script>
+  <script>
+    var config = {
+      appKey: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+      defaultRoom: 'audio-video'
+    };
+  </script>
+-->
 </head>
 <body>
+  <div id="peers" class="container card-deck"></div>
 
-  <div class="container">
-    <div class="container-panel left">
+  <div id="selector" state="" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
 
-      <div id="preview">
-        <div class="video-cover">No Preview Media</div>
-        <video id="preview-video" class="video-video" autoplay="true"></video>
-      </div>
+        <div class="modal-header">
+          <h5 class="modal-title">Select Screensharing & Audio Source to Join Call</h5>
+        </div>
 
-      <div class="panel-section">
-        <b>Screen Media Source: </b>
-        <select id="screen-media"></select>
-      </div>
+        <div id="selector-warning" class="modal-body alert alert-warning" role="alert">
+          <b>Opps!</b> Seems like you are using a deprecated Chrome extension version which does not allow you to select individual sources.
+          The latest extension version can be requested from <a href="http://support.temasys.com.sg">the support portal</a>.
+        </div>
 
-      <div class="panel-section">
-        <b>Screen Media Source Input: </b>
-        <select id="screen-media-input">
-          <option value="null">Default</option>
-        </select>
-      </div>
+        <div id="selector-message" class="modal-body alert alert-danger" role="alert">Initialising App ...</div>
 
-      <div class="panel-section">
-        <b>Audio Input (Microphone) Source: </b>
-        <select id="audio-input">
-          <option value="false">None</option>
-        </select>
-        <p><input id="audio-input-tab" type="checkbox" disabled="true"> <label for="audio-input-tab">Use Tab Audio</label></p>
-      </div>
+        <div id="selector-content" class="modal-body">
+          <div class="video">
+            <video id="selector-stream" class="video-stream" autoplay="true"></video>
+            <div class="video-cover">No Media</div>
+          </div>
 
-      <div class="btn-group">
-        <div id="error"></div>
-        <button id="btn-preview" class="preview" onclick="preview()">Select Media Settings</button>
-        <button id="btn-send" onclick="send()" disabled="true">Connect</button>
-      </div>
+          <div class="input-group">
+            <span class="input-group-addon">Camera:</span>
+            <select id="screen-source"  class="form-control" disabled="true"></select>
+          </div>
 
-      <div class="panel-section">
-        <b>Audio Output (Speaker) Source: </b>
-        <select id="audio-output">
-          <option value="false">None</option>
-        </select>
+          <div class="input-group">
+            <span class="input-group-addon">Microphone:</span>
+            <select id="microphone-source"  class="form-control" disabled="true">
+              <option value="false">None</option>
+            </select>
+          </div>
+
+          <div class="input-group disabled">
+            <span class="input-group-addon">Use Tab Audio:</span>
+            <input id="tab-audio-source" type="checkbox" class="form-control" disabled="true">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="selector-preview" type="button" class="btn btn-outline-primary">Get Media First</button>
+          <button id="selector-connect" type="button" class="btn btn-primary" disabled="true">Then Connect</button>
+        </div>
       </div>
     </div>
-
-    <div id="peers" class="container-panel right"></div>
   </div>
 
   <script>
     var skylink = new Skylink();
-    var streams = {
-      preview: null,
-      current: null
-    };
-    var sourcesInput = {};
 
-    // Event triggered when Peer has joined the Room.
     skylink.on('peerJoined', function (peerId, peerInfo, isSelf) {
       var element = document.createElement('div');
       element.id = peerId;
-      element.className = 'peer' + (isSelf ? ' self' : '');
-      element.innerHTML =
-        '<video id="' + peerId + '-video" class="peer-video"></video>' +
-        '<div class="peer-info">' +
-          '<p><b>Peer ID' + (isSelf ? ' (self)' : '') + ':</b> <span>' + peerId + '</span></p>' +
-        // `peerInfo.settings.audio` and `peerInfo.settings.video` will appear as `false` because there is no stream present.
-          '<p><b>Media:</b> <span id="' + peerId + '-info">None</span></p>'
+      element.className = 'card ' + (isSelf ? 'border-primary' : 'border-secondary') + ' mb-3';
+      element.innerHTML +=
+        '<video id="' + peerId + '-stream" class="card-img-top" autoplay="true"' + (isSelf ? ' muted="true"' : '') + '></video>' + 
+        '<div class="card-body ' + (isSelf ? 'text-primary' : 'text-secondary') + '">' +
+          '<p class="card-text"><b>' + (isSelf ? 'Self' : 'Peer') + ' ID:</b> ' + peerId + '</p>' +
+          '<p class="card-text"><b>Media:</b> <span id="' + peerId + '-media">None</span></p>' +
         '</div>';
 
       document.getElementById('peers').appendChild(element);
-      renderAudioOutput();
     });
 
-    // Event triggered when Peer has sent a stream.
     skylink.on('incomingStream', function (peerId, stream, isSelf, peerInfo) {
-      if (!document.getElementById(peerId)) {
-        return;
-      }
+      if (!document.getElementById(peerId)) return;
 
       if (peerInfo.settings.audio && peerInfo.settings.video) {
-        document.getElementById(peerId + '-info').innerHTML = 'Audio & Video';
+        document.getElementById(peerId + '-media').innerHTML = 'Screen & Audio';
 
-      } else if (peerInfo.settings.audio) {
-        document.getElementById(peerId + '-info').innerHTML = 'Audio Only';
-      
       } else if (peerInfo.settings.video) {
-        document.getElementById(peerId + '-info').innerHTML = 'Video Only';
-      
-      } else {
-        document.getElementById(peerId + '-info').innerHTML = 'None';
+        document.getElementById(peerId + '-media').innerHTML = 'Screen Only';
       }
 
-      document.getElementById(peerId + '-video').className = 'peer-video active';
-      attachMediaStream( document.getElementById(peerId + '-video'), stream );
+      document.getElementById(peerId + '-stream').className += ' active';
+      attachMediaStream( document.getElementById(peerId + '-stream'), stream );
     });
 
-    // Event triggered when Peer stream has changed.
-    skylink.on('streamEnded', function (peerId) {
-      document.getElementById(peerId + '-info').innerHTML = 'None';
-      document.getElementById(peerId + '-video').className = 'peer-video';
-    });
-
-    // Event triggered when Peer has left the Room.
     skylink.on('peerLeft', function (peerId, peerInfo, isSelf) {
-      if (!document.getElementById(peerId)) {
+      if (isSelf) {
+        document.getElementById('peers').innerHTML = '';
         return;
-      }
+
+      } else if (!document.getElementById(peerId)) return;
 
       document.getElementById('peers').removeChild( document.getElementById(peerId) );
     });
 
-
-    // Function that gets the preview Stream media and sends it when self Peer chooses to.
-    function preview () {
-      var audioSettings = JSON.parse( document.getElementById('audio-input').value );
-      var screenSettings = document.getElementById('screen-media').value;
-
-      if (document.getElementById('audio-input-tab').checked) {
-        audioSettings = {};
-        screenSettings = [screenSettings, 'audio'];
-
-      } else if (document.getElementById('screen-media-input').value !== 'null') {
-        screenSettings = {
-          mediaSource: screenSettings,
-          sourceId: document.getElementById('screen-media-input').value
-        };
-      }
-
-      // Prevent from double-clicks.
-      document.getElementById('btn-preview').disabled = true;
-      document.getElementById('btn-send').disabled = true;
-      document.getElementById('error').innerHTML = '';
-
-      // Stop existing previewed stream.
-      if (streams.preview) {
-        try {
-          streams.preview.getTracks().forEach(function (track) {
-            track.stop();
-          });
-        } catch (error) {
-          streams.preview.stop();
-        }
-      }
-
-      if (settings.audio || settings.video) {
-        navigator.getUserMedia({
-        }, function (stream) {
-          streams.preview = stream;
-
-          document.getElementById('btn-preview').disabled = false;
-          document.getElementById('btn-send').disabled = false;
-          document.getElementById('preview').className = 'active';
-
-          attachMediaStream( document.getElementById('preview-video'), stream );
-
-        }, function (error) {
-          document.getElementById('btn-preview').disabled = false;
-          document.getElementById('error').innerHTML = 'Failed retrieving stream: ' + error.message;
+    skylink.on('mediaAccessStopped', function () {
+      if (Object.keys( skylink.getPeersInRoom() ).length === 0) {
+        setState('fetch-error', {
+          title: 'Media Stopped Error',
+          content: 'Media access stopped abruptly'
         });
-
-      } else {
-        document.getElementById('btn-preview').disabled = false;
-        document.getElementById('btn-send').disabled = false;
-        document.getElementById('preview').className = '';
-
-        attachMediaStream( document.getElementById('preview-video'), null );
       }
-    }
+    });
 
-    
-    // Function that sends the currently previewed Stream.
-    function send () {
-      // Set with the Stream we are about to send.
-      streams.current = streams.preview;
-      streams.preview = null;
 
-      // Prevent from double-clicks.
-      document.getElementById('btn-preview').disabled = true;
-      document.getElementById('btn-send').disabled = true;
-      document.getElementById('error').innerHTML = '';
+    function setState (state, error) {
+      document.getElementById('selector').setAttribute('state', state);
+      document.getElementById('selector-message').innerHTML = error ? '<b>' + error.title + '</b> ' + error.content : '';
 
-      // Stop the current sending stream and start sending the new stream.
-      skylink.stopStream();
+      if (['fetch-error', 'connect-error'].indexOf(state) > -1) {
+        document.getElementById('screen-source').disabled = false;
+        document.getElementById('microphone-source').disabled = false;
+        document.getElementById('selector-preview').disabled = false;
+  
+        if (state === 'fetch-error') {
+          document.getElementById('selector-connect').disabled = true;
+          document.getElementById('selector-stream').parentNode.className = 'video';
+          attachMediaStream( document.getElementById('selector-stream'), null );
 
-      var refreshCallback = function () {
-        // Start connecting to the Room if user is not in the Room.
-        if (Object.keys(skylink.getPeersInRoom()).length === 0) {
-          skylink.init(config, function (initErr) {
-            if (initErr) {
-              document.getElementById('btn-preview').disabled = false;
-              document.getElementById('btn-send').disabled = false;
-              document.getElementById('error').innerHTML = 'Failed initialising: ' + (initErr.error.message || initErr.error);
-              return;
-            }
-
-            skylink.joinRoom(function (joinRoomErr) {
-              document.getElementById('btn-preview').disabled = false;
-
-              if (joinRoomErr) {
-                document.getElementById('btn-send').disabled = false;
-                document.getElementById('error').innerHTML = 'Failed connecting to Room: ' + (joinRoomErr.error.message || joinRoomErr.error);
-                return;
-              }
-
-              document.getElementById('btn-send').disabled = true;
-              document.getElementById('btn-send').innerHTML = 'Replace';
-            });
-          });
-        } else {
-          document.getElementById('btn-preview').disabled = false;
-          document.getElementById('btn-send').disabled = true;    
+        } else if (state === 'connect-error') {
+          document.getElementById('selector-connect').disabled = false;
         }
-      };
 
-      if (streams.current) {
-        skylink.sendStream(streams.current, refreshCallback);
+      } else if (['fetching', 'connecting'].indexOf(state) > -1) {
+        document.getElementById('screen-source').disabled = true;
+        document.getElementById('microphone-source').disabled = true;
+        document.getElementById('selector-preview').disabled = true;
+        document.getElementById('selector-connect').disabled = true;
+
+      } else if (['ready', 'fetched'].indexOf(state) > -1) {
+        document.getElementById('screen-source').disabled = false;
+        document.getElementById('microphone-source').disabled = false;
+        document.getElementById('selector-preview').disabled = false;
+
+        if (state === 'fetched') {
+          document.getElementById('selector-connect').disabled = false;
+          document.getElementById('selector-stream').parentNode.className = 'video active';
+        }
+
+      } else if (['connected'].indexOf(state) > -1) {
+        $('#selector').modal('hide');
+      }
+    }
+
+
+    $('#selector').on('hidden.bs.modal', function () {
+      if (Object.keys( skylink.getPeersInRoom() ).length === 0) {
+        $('#selector').modal('show');
+      }
+    });
+
+
+    document.getElementById('screen-source').onchange = function () {
+      var mediaSource = document.getElementById('screen-source').value;
+
+      if (mediaSource === 'tab') {
+        document.getElementById('tab-audio-source').disabled = false;
+        document.getElementById('tab-audio-source').parentNode.className = 'input-group';
+        document.getElementById('microphone-source').disabled = true;
 
       } else {
-        skylink.refreshConnection(refreshCallback);
+        document.getElementById('tab-audio-source').disabled = true;
+        document.getElementById('tab-audio-source').parentNode.className = 'input-group disabled';
+        document.getElementById('tab-audio-source').checked = false;
       }
-    }
+    };
 
-    // Function that renders the selected audio output sink ID.
-    // Returns [Boolean] if `setSinkId()` is supported or not.
-    function renderAudioOutput () {
-      if (typeof document.getElementById('preview-video').setSinkId !== 'function') {
-        return;
+
+    document.getElementById('selector-preview').onclick = function () {
+      var mediaSource = document.getElementById('screen-source').value;
+      var audioSource = false;
+
+      if (mediaSource === 'tab' && document.getElementById('tab-audio-source').checked) {
+        mediaSource = ['tab', 'audio'];
+        audioSource = true;
+
+      } else {
+        audioSource = JSON.parse( document.getElementById('microphone-source').value );
       }
 
-      Object.keys( skylink.getPeersInRoom() ).forEach(function (peerId) {
-        document.getElementById(peerId + '-video').setSinkId( document.getElementById('audio-output').value || 'default' );
+      setState('fetching');
+
+      skylink.shareScreen(audioSource, mediaSource, function (shareScreenErr, stream) {
+        if (shareScreenErr) {
+          return setState('fetch-error', {
+            title: 'Media Error',
+            content: shareScreenErr.message || shareScreenErr
+          });
+        }
+
+        attachMediaStream( document.getElementById('selector-stream'), stream );
+        setState('fetched');
       });
+    };
 
-      document.getElementById('preview-video').setSinkId( document.getElementById('audio-output').value || 'default' );
-      return true;
-    }
+    document.getElementById('selector-connect').onclick = function () {
+      setState('connecting');
+
+      skylink.joinRoom(function (joinRoomErr) {
+        if (joinRoomErr) {
+          return setState('connect-error', {
+            title: 'Join Room Error',
+            content: joinRoomErr.error.message || joinRoomErr.error
+          });
+        }
+
+        setState('connected');
+      });
+    };
 
 
-    // Retrieve the list of audio input, output and video input sources.
-    skylink.getStreamSources(function (sources) {
-      sources.audio.input.forEach(function (item) {
+    $('#selector').modal('show');
+
+    skylink.init(config, function (initErr) {
+      if (initErr) {
+        return setState('ready-error', {
+          title: 'Init Error',
+          content: initErr.error.message || initErr.error
+        });
+      }
+
+      var mediaSources = [];
+
+      if (['chrome', 'opera'].indexOf(AdapterJS.webrtcDetectedBrowser) > -1) {
+        if (navigator.userAgent.toLowerCase().indexOf('android') === -1) {
+          mediaSources.push('screen', 'window', 'tab');
+
+          if (!(AdapterJS.extensionInfo && AdapterJS.extensionInfo.chrome && !AdapterJS.extensionInfo.chrome.iframeLink)) {
+            document.getElementById('selector-warning').className += ' show';
+          }
+
+        } else if (AdapterJS.webrtcDetectedBrowser === 'chrome' && AdapterJS.webrtcDetectedVersion >= 59) {
+          mediaSources.push('screen');
+        }
+
+      } else if (['firefox'].indexOf(AdapterJS.webrtcDetectedBrowser) > -1 &&
+        navigator.userAgent.toLowerCase().indexOf('android') === -1) {
+        mediaSources.push('screen', 'window', 'camera', 'browser', 'application');
+
+      } else if (AdapterJS.webrtcDetectedType === 'plugin' && AdapterJS.WebRTCPlugin.plugin &&
+        AdapterJS.WebRTCPlugin.plugin.isScreensharingAvailable &&
+        AdapterJS.WebRTCPlugin.plugin.HasScreensharingFeature) {
+        mediaSources.push('screen', 'window');
+      }
+
+      if (mediaSources.length === 0) {
+        return setState('ready-error', {
+          title: 'Init Error',
+          content: 'Screensharing is not supported in current device!'
+        });
+      }
+
+      mediaSources.forEach(function (sourceItem) {
         var option = document.createElement('option');
-        option.value = JSON.stringify({ deviceId: item.deviceId });
-        option.innerHTML = item.label;
+        option.value = sourceItem;
+        option.innerHTML = sourceItem.substr(0, 1).toUpperCase() + sourceItem.substr(1, sourceItem.length - 1);
 
-        document.getElementById('audio-input').appendChild(option);
+        document.getElementById('screen-source').appendChild(option);
       });
 
-      // Render the list of audio output sources only if .setSinkId() is supported!
-      if (renderAudioOutput()) {
-        document.getElementById('audio-output').innerHTML = '';
+      navigator.mediaDevices.enumerateDevices().then(function (sources) {
+        sources.forEach(function (sourceItem, index) {
+          if (['audio', 'audioinput'].indexOf(sourceItem.kind) === -1) return;
 
-        sources.audio.output.forEach(function (item) {
+          var deviceId = sourceItem.deviceId || sourceItem.sourceId || sourceItem.id;
           var option = document.createElement('option');
-          option.value = item.deviceId;
-          option.innerHTML = item.label;
-
-          document.getElementById('audio-output').appendChild(option);
-        });
-
-        // Start rendering the correct audio output speaker if selection has switched.
-        document.getElementById('audio-output').disabled = false;
-        document.getElementById('audio-output').onchange = function () {
-          renderAudioOutput();
-        };
-      }
-    });
-
-    // Retrieve the list of screensharing sources.
-    skylink.getScreenSources(function (sources) {
-      sources.mediaSource.forEach(function (item) {
-        if (item === 'audio') {
-          return;
-        }
-
-        var option = document.createElement('option');
-        option.value = item;
-        option.innerHTML = 'Source: ' + item;
-
-        document.getElementById('screen-media').appendChild(option);
-
-        sourcesInput[item] = [];
-
-        sources.mediaSourceInput.forEach(function (inputItem) {
-          sourcesInput[item].push({
-            title: inputItem.label,
-            value: inputItem.sourceId
+          option.innerHTML = sourceItem.label || 'microphone_' + index;
+          option.value = JSON.stringify({
+            deviceId: deviceId
           });
+
+          document.getElementById('microphone-source').appendChild(option);
         });
+
+        setState('ready');
       });
     });
-
-    document.getElementById('screen-media').onchange = function () {
-      document.getElementById('screen-media-input').innerHTML = '<option value="null">Default</option>';
-      document.getElementById('audio-input-tab').checked = false;
-
-      document.getElementById('audio-input-tab').disabled = document.getElementById('screen-media').value !== 'tab';
-      
-      sourcesInput[document.getElementById('screen-media').value].forEach(function (item) {
-        var option = document.createElement('option');
-        option.value = item.value;
-        option.innerHTML = 'Input: ' + item.title;
-
-        document.getElementById('screen-media').appendChild(option);
-      });
-    };
-
-    document.getElementById('audio-input-tab').onchange = function () {
-      document.getElementById('audio-input').disabled = document.getElementById('audio-input-tab').checked;
-      document.getElementById('screen-media-input').disabled = document.getElementById('audio-input-tab').checked;
-    };
   </script>
-
 </body>
 </html>
+  

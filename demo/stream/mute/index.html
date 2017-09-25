@@ -1,9 +1,101 @@
 <html lang="en">
 <head>
-  <title>Stream : Mute Audio & Video</title>
+  <title>Stream : Audio & Video Call</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <!-- Configure for styling for demo purposes -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"> 
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.5/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+  <style>
+    .navbar .navbar-text {
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .btn {
+      cursor: pointer;
+    }
+
+    .btn.disabled {
+      cursor: initial!important;
+    }
+
+    .view {
+      padding: 15px;
+    }
+
+    .view .view-content {
+      padding: 15px 12px;
+      border: solid 1px #ccc;
+      border-radius: 7px;
+      font-size: 14px;
+    }
+
+    .view .view-content h4 {
+      font-size: 18px;
+    }
+
+    .view .view-content .alert {
+      display: none;
+    }
+
+    .view .view-content .content-media .video {
+      margin: 15px 0 0;
+      background: #ccc;
+      border: solid 1px #fff;
+      border-radius: 7px;
+      width: 100%;
+      height: 185px;
+      transition: background 1s ease-in-out;
+      -webkit-transition: background 1s ease-in-out;
+      -moz-transition: background 1s ease-in-out;
+    }
+
+    .view .view-content .content-media .video.active {
+      background: #000;
+    }
+
+    .view .view-content .content-media .video.current {
+      border-color:#007bff;
+    }
+
+    .view .view-content .content-media p {
+      margin: 10px 0 7px;
+      color: #686868;
+    }
+
+    .view .view-content .content-media-info {
+      margin-top: 15px;
+      border-top: solid 1px #eeee;
+      padding-top: 15px;
+    }
+
+    .view .view-content .content-media-info h5 {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .view .view-content .content-media-info p {
+      margin: 0 0 5px;
+    }
+
+    .view .view-content .content-media-info #connect.btn {
+      margin-top: 25px;
+      display: block;
+    }
+
+    .view .view-content .content-media-info .btn-group {
+      margin: 19px 0 0;
+    }
+
+    
+    
+
+  </style>
 
   <!-- Configure for testing hash authentication -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/hmac-sha1.js"></script>
@@ -22,286 +114,95 @@
       };
     </script>
   -->
-
-  <style>
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    #header {
-      font-size: 16px;
-    }
-
-    #header .btn-group button,
-    #peers .peer .peer-info {
-      font-size: 14px;
-      
-    }
-
-    #header {
-      background: #f8f8f8;
-      border-bottom: solid 1px #ccc;
-      padding: 17px 25px 12px;
-    }
-
-    #header .red {
-      color: red;
-    }
-
-    #header .btn-group {
-      display: inline-block;
-      vertical-align: top;
-      margin: -5px 0 0 35px;
-    }
-
-    #header .btn-group button {
-      background: #ccc;
-      margin-left: 5px;
-      padding: 5px 12px;
-      cursor: pointer;
-      transition: background .1s ease-in-out;
-      -webkit-transition: background .1s ease-in-out;
-      -moz-transition: background .1s ease-in-out;
-    }
-
-    #header .btn-group button:hover {
-      background: #aaa;
-    }
-
-    #header .btn-group button[disabled] {
-      background: #ccc!important;
-      opacity: .5;
-      cursor: initial;
-    }
-
-    #header #error {
-      margin: 0;
-      color: #d9534f;
-    }
-
-    .container .container-column {
-      display: inline-block;
-      vertical-align: top;
-      margin: 15px;
-    }
-
-    .container .container-column .video-container {
-      display: inline-block;
-      vertical-align: top;
-      margin-right: 15px;
-    }
-
-    .container .container-column .video-container .video {
-      display: block;
-      background: #888;
-      width: 350px;
-      height: 250px;
-      margin-bottom: 9px;
-      border: solid 2px #aaa;
-    }
-
-    .container .container-column .video-container .video.active {
-      background: #000;
-    }
-
-    .container .container-column .video-container .video.main {
-      border-color: red;
-    }
-
-    .container .container-column.left {
-      border: solid 1px #ccc;
-      border-radius: 5px;
-      padding: 0 18px;
-    }
-
-    .container .container-column.left p {
-      margin: 15px 0;
-    }
-    
-  </style>
 </head>
 <body>
-  <div id="header">
-    The main stream sent to Peers in the Room is highlighted in (<b class="red">Red</b>).
-
-    <div class="btn-group">
-      <button id="audio-mute" onclick="toggleMute('audio')">Mute Audio</button>
-      <button id="video-mute" onclick="toggleMute('video')">Mute Video</button>
+  <nav class="navbar navbar-light bg-light">
+    <div class="container">
+      <span class="navbar-text">Select the media and muted settings, and then join the call to see how it appears in the remote Peer viewing end.</span>
     </div>
-
-    <div class="btn-group">
-      <button id="connect" onclick="connect()">Connect</button>
-      <button id="share-screen" onclick="toggleShareScreen()" disabled="true">Share Screen</button>  
-    </div>
-
-    <p id="error"></p>
-  </div>
+  </nav>
 
   <div class="container">
-    <div class="container-column left">
-      <p><b>Audio:</b> <span id="audio-info">No</span></p>
-      <p><b>Audio Muted:</b> <span id="audio-mute-info">No</span></p>
-      <p><b>Video:</b> <span id="video-info">No</span></p>
-      <p><b>Video Muted:</b> <span id="video-mute-info">No</span></p>
-    </div>
+    <div class="row">
+      <div id="local-view" class="col-8 view">
+        <div class="view-content">
+          <h4>Self Peer View</h4>
+          <div id="local-view-error" class="alert alert-danger" role="alert"></div>
+          <div class="row">
+            <div class="col-6 content-media">
+              <video id="video-camera" class="video" autoplay="true"></video>
+              <p><b>Media (Camera):</b> <span id="video-camera-info">None</span></p>
+            </div>
+            <div class="col-6 content-media">
+              <video id="video-screen" class="video" autoplay="true"></video>
+              <p><b>Media (Screen):</b> <span id="video-screen-info">None</span></p>
+            </div>
+            <div class="col-12 content-media-info">
+              <h5>Media & Muted Settings</h5>
+              <div class="btn-group" role="group" data-toggle="buttons">
+                <label class="btn btn-outline-dark btn-sm"><input type="radio" name="media" id="media-av" autocomplete="off">Audio & Video</label>
+                <label class="btn btn-outline-dark btn-sm"><input type="radio" name="media" id="media-as" autocomplete="off">Audio & Screen</label>
+                <label class="btn btn-outline-dark btn-sm"><input type="radio" name="media" id="media-a" autocomplete="off">Audio Only </label>
+                <label class="btn btn-outline-dark btn-sm"><input type="radio" name="media" id="media-v" autocomplete="off">Video Only</label>
+                <label class="btn btn-outline-dark btn-sm"><input type="radio" name="media" id="media-s" autocomplete="off">Screen Only</label>
+                <label class="btn btn-outline-dark btn-sm active"><input type="radio" name="media" id="media-none" autocomplete="off" checked>None</label>
+              </div>
 
-    <div class="container-column right">
-      <div class="video-container">
-        <video id="camera" class="video" autoplay="true"></video>
-        <b>Camera Stream (Media: <span id="camera-info">None</span>)</b>
+              <div class="btn-group" role="group" data-toggle="buttons">
+                <label class="btn btn-outline-info btn-sm"><input type="checkbox" id="audio-mute" autocomplete="off">Audio Muted</label>
+                <label class="btn btn-outline-info btn-sm"><input type="checkbox" id="video-mute" autocomplete="off">Video Muted</label>
+              </div>
+
+              <button id="connect" class="btn btn-primary">Join Room</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="video-container">
-        <video id="screen" class="video" autoplay="true"></video>
-        <b>Screen Stream (Media: <span id="screen-info">None</span>)</b>
+
+      <div id="remote-view" class="col-4 view">
+        <div class="view-content">
+          <h4>Remote Peer View</h4>
+          <div id="remote-view-error" class="alert alert-danger" role="alert"></div>
+          <div class="row">
+            <div class="col-12 content-media">
+              <video id="video-remote" class="video" autoplay="true"></video>
+              <p><b>Media:</b> <span id="video-remote-info">Not Connected</span></p>
+              <p><b>Muted Status:</b> <span id="video-remote-mute-info">Not Connected</span></p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    var skylink = new Skylink();
-    var screenActive = false;
-    var cameraActive = false;
-    var muteSettings = {
-      audioMuted: false,
-      videoMuted: false
+    var skylink = {
+      local: new Skylink(),
+      remote: new Skylink()
     };
 
-    // Event triggered when stream is available.
-    skylink.on('incomingStream', function (peerId, stream, isSelf, peerInfo, isScreensharing) {
-      if (!isSelf) {
-        return;
-      }
+    skylink.remote.on('incomingStream', function (peerId, stream, isSelf, peerInfo) {
+        
+    });
 
-      var media = 'None';
+    skylink.remote.on('peerLeft', function (peerId, peerInfo, isSelf) {
+      if (isSelf) return;
 
-      if (peerInfo.settings.audio && peerInfo.settings.video) {
-        media = 'Audio & Video';
+    });
 
-      } else if (peerInfo.settings.audio) {
-        media = 'Audio Only';
-
-      } else if (peerInfo.settings.video) {
-        media = 'Video Only';
-      }
+    function setState (which, state, error) {
       
-      if (!isScreensharing) {
-        cameraActive = true;
-        document.getElementById('camera-info').innerHTML = media;
+    }
 
-      } else {
-        screenActive = true;
-        document.getElementById('share-screen').disabled = false;
-        document.getElementById('share-screen').innerHTML = 'Stop Screen';
-        document.getElementById('screen-info').innerHTML = media;
-      }
-
-      document.getElementById('audio-info').innerHTML = peerInfo.settings.audio ? 'Yes' : 'No';
-      document.getElementById('video-info').innerHTML = peerInfo.settings.video ? 'Yes' : 'No';
-      document.getElementById('audio-mute-info').innerHTML = peerInfo.mediaStatus.audioMuted ? 'Yes' : 'No';
-      document.getElementById('video-mute-info').innerHTML = peerInfo.mediaStatus.videoMuted ? 'Yes' : 'No';
-
-      attachMediaStream( document.getElementById( isScreensharing ? 'screen' : 'camera' ), stream );
-
-      document.getElementById('screen').className = (isScreensharing ? 'video main' : 'video') + (screenActive ? ' active' : '');
-      document.getElementById('camera').className = (isScreensharing ? 'video' : 'video main') + (cameraActive ? ' active' : '');
-    });
-
-    // Event triggered when stream muted status has changed.
-    skylink.on('streamMuted', function (peerId, peerInfo, isSelf) {
-      if (!isSelf) {
-        return;
-      }
-
-      document.getElementById('audio-mute-info').innerHTML = peerInfo.mediaStatus.audioMuted ? 'Yes' : 'No';
-      document.getElementById('video-mute-info').innerHTML = peerInfo.mediaStatus.videoMuted ? 'Yes' : 'No';
-    });
-
-    // Event triggered when stream has stopped.
-    skylink.on('streamEnded', function (peerId, peerInfo, isSelf, isScreensharing) {
-      if (!isSelf) {
-        return;
-      }
-
-      if (!isScreensharing) {
-        cameraActive = false;
-        document.getElementById('camera-info').innerHTML = 'None';
-        attachMediaStream( document.getElementById('camera'), null );
-
-      } else {
-        screenActive = false;
-        document.getElementById('share-screen').disabled = false;
-        document.getElementById('share-screen').innerHTML = 'Share Screen';
-        document.getElementById('screen-info').innerHTML = 'None';
-        attachMediaStream( document.getElementById('screen'), null );
-      }
-    });
+    skylink.remote.init(config, function (remoteInitErr) {
+      skylink.remote.joinRoom(function (remoteJoinRoomErr) {
+        skylink.local.init(config, function (localInitErr) {
 
 
-    // Function to connect to Room.
-    function connect () {
-      // Disable buttons from being clickable
-      document.getElementById('connect').disabled = true;
-      document.getElementById('error').innerHTML = '';
-
-      skylink.init(config, function (initErr) {
-        if (initErr) {
-          document.getElementById('connect').disabled = false;
-          document.getElementById('error').innerHTML = 'Failed initialising: ' + (initErr.error.message || initErr.error);
-          return;
-        }
-
-        skylink.joinRoom({
-          audio: { mute: muteSettings.audioMuted },
-          video: { mute: muteSettings.videoMuted }
-        }, function (joinRoomErr) {
-          if (joinRoomErr) {
-            document.getElementById('connect').disabled = false;
-            document.getElementById('error').innerHTML = 'Failed connecting to Room: ' + (joinRoomErr.error.message || joinRoomErr.error);
-            return;
-          }
-
-          document.getElementById('share-screen').disabled = false;
         });
       });
-    }
+    });
 
-
-    // Function that toggles the muted settings.
-    function toggleMute (trackType) {
-      if (trackType === 'audio') {
-        muteSettings.audioMuted = !muteSettings.audioMuted;
-        document.getElementById('audio-mute').innerHTML = muteSettings.audioMuted ? 'Unmute Audio' : 'Mute Audio';
-
-      } else if (trackType === 'video') {
-        muteSettings.videoMuted = !muteSettings.videoMuted;
-        document.getElementById('video-mute').innerHTML = muteSettings.videoMuted ? 'Unmute Video' : 'Mute Video';
-      }
-
-      skylink.muteStream(muteSettings);
-    }
-
-
-    // Function that toggles the share screen status.
-    function toggleShareScreen () {
-      document.getElementById('share-screen').disabled = true;
-      document.getElementById('error').innerHTML = '';
-
-      if (screenActive) {
-        skylink.stopScreen();
-
-      } else {
-        skylink.shareScreen(true, function (err) {
-          if (err) {
-            document.getElementById('share-screen').disabled = false;
-            document.getElementById('error').innerHTML = 'Failed retrieving screen: ' + (err.message || err);
-          }
-        });
-      }
-    }
 
   </script>
 </body>
