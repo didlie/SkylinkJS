@@ -178,18 +178,18 @@
 
             <div class="controls-selector">
               <div class="btn-group" role="group" data-toggle="buttons">
-                <label class="btn btn-outline-dark btn-sm"><input type="radio" name="camera" id="camera-av" autocomplete="off">Camera : <b>Audio & Video</b></label>
-                <label class="btn btn-outline-dark btn-sm"><input type="radio" name="camera" id="camera-a" autocomplete="off">Camera : <b>Audio Only</b></label>
-                <label class="btn btn-outline-dark btn-sm"><input type="radio" name="camera" id="camera-v" autocomplete="off">Camera : <b>Video Only</b></label>
-                <label class="btn btn-outline-dark btn-sm active"><input type="radio" name="camera" id="camera-none" autocomplete="off" checked="true">Camera : <b>None</b></label>
+                <label class="btn btn-outline-dark btn-sm"><input id="camera-av" type="radio" name="camera" autocomplete="off">Camera : <b>Audio & Video</b></label>
+                <label class="btn btn-outline-dark btn-sm"><input id="camera-a" type="radio" name="camera" autocomplete="off">Camera : <b>Audio Only</b></label>
+                <label class="btn btn-outline-dark btn-sm"><input id="camera-v" type="radio" name="camera" autocomplete="off">Camera : <b>Video Only</b></label>
+                <label class="btn btn-outline-dark btn-sm active"><input id="camera-none" type="radio" name="camera" autocomplete="off" checked="true">Camera : <b>None</b></label>
               </div>
             </div>
 
             <div class="controls-selector">
               <div class="btn-group" role="group" data-toggle="buttons">
-                <label class="btn btn-outline-dark btn-sm"><input type="radio" name="screen" id="screen-av" autocomplete="off">Screen : <b>Audio & Video</b></label>
-                <label class="btn btn-outline-dark btn-sm"><input type="radio" name="screen" id="screen-v" autocomplete="off">Screen : <b>Video Only</b></label>
-                <label class="btn btn-outline-dark btn-sm active"><input type="radio" name="screen" id="screen-none" autocomplete="off" checked="true">Screen : <b>None</b></label>
+                <label class="btn btn-outline-dark btn-sm"><input id="screen-av" type="radio" name="screen" autocomplete="off">Screen : <b>Audio & Video</b></label>
+                <label class="btn btn-outline-dark btn-sm"><input id="screen-v" type="radio" name="screen" autocomplete="off">Screen : <b>Video Only</b></label>
+                <label class="btn btn-outline-dark btn-sm active"><input id="screen-none" type="radio" name="screen" autocomplete="off" checked="true">Screen : <b>None</b></label>
               </div>
             </div>
 
@@ -215,8 +215,9 @@
           <div class="row">
             <div class="col-12 video">
               <video id="remote-stream" class="video-stream" autoplay="true"></video>
-              <p class="video-info"><b>Media:</b> <span id="remote-stream-info">Not Connected</span></p>
-              <p class="video-info"><b>Muted:</b> <span id="remote-stream-info-mute">Not Connected</span></p>
+              <p class="video-info"><b>Media:</b> <span id="remote-stream-info">-</span></p>
+              <p class="video-info"><b>Muted:</b> <span id="remote-stream-info-mute">-</span></p>
+              <p class="video-info"><b>Ended:</b> <span id="remote-stream-info-end">-</span></p>
             </div>
           </div>
         </div>
@@ -227,12 +228,15 @@
   <script>
     var skylink = {
       local: new Skylink(),
-      remote: new Skylink()
+      remote: new Skylink(),
+      connected: false
     };
     var streams = {
       screen: null,
       stream: null,
       remote: {
+        connected: false,
+        ended: false,
         stream: null,
         settings: { audio: false, video: false },
         mediaStatus: { audioMuted: true, videoMuted: true }
@@ -249,15 +253,26 @@
       setState().local('stream');
     });
 
+    skylink.remote.on('peerJoined', function (peerId, peerInfo, isSelf) {
+      if (isSelf) return;
+
+      console.info('test', peerId, peerInfo, isSelf);
+
+      streams.remote.connected = true;
+      setState().remote('stream');
+    });
+
     skylink.remote.on('incomingStream', function (peerId, stream, isSelf, peerInfo) {
       streams.remote.stream = stream;
+      streams.remote.ended = false;
       streams.remote.settings = peerInfo.settings;
       streams.remote.mediaStatus = peerInfo.mediaStatus;
       setState().remote('stream');
     });
 
-    skylink.remote.on('streamEnded', function (peerId) {
+    skylink.remote.on('streamEnded', function (peerId, peerInfo) {
       streams.remote.stream = null;
+      streams.remote.ended = true;
       streams.remote.settings = peerInfo.settings;
       streams.remote.mediaStatus = peerInfo.mediaStatus;
       setState().remote('stream');
@@ -269,6 +284,7 @@
 
       } else {
         streams.remote.stream = null;
+        streams.remote.connected = false;
         streams.remote.settings = peerInfo.settings;
         streams.remote.mediaStatus = peerInfo.mediaStatus;
         setState().remote('stream');
@@ -277,16 +293,22 @@
 
 
     function enableButton (elementId, enabled) {
-      var className = document.getElementById(elementId).parentNode.className;
-      className = enabled ? className.replace(/ disabled/g, '') : className + ' disabled';
+      var targetElement = document.getElementById(elementId);
+      var className = document.getElementById(elementId).className;
+  
+      if (document.getElementById(elementId).tagName === 'INPUT') {
+        targetElement = document.getElementById(elementId).parentNode;
+        className = document.getElementById(elementId).parentNode.className;
+      }
 
-      document.getElementById(elementId).parentNode.className = className;
+      targetElement.className = enabled ? className.replace(/ disabled/g, '') : className + ' disabled';
       document.getElementById(elementId).disabled = !enabled;
     }
 
 
     function setState () {
       return {
+
         local: function (state, error) {
           document.getElementById('local').setAttribute('state', state);
           document.getElementById('local-message').innerHTML = error ? '<b>' + error.title + '</b> ' + error.content : '';
@@ -301,8 +323,7 @@
             enableButton('screen-av', true);
             enableButton('screen-v', true);
             enableButton('screen-none', true);
-
-            document.getElementById('connect').disabled = false;
+            enableButton('connect', true);
 
             if (state === 'stream') {
               document.getElementById('camera-stream').parentNode.className = 'col-6 video' + (streams.camera? ' active' : '') + (!streams.screen ? ' current' : '');
@@ -339,9 +360,11 @@
 
             } else if (state === 'connected') {
               document.getElementById('connect').innerHTML = 'Leave Room';
+              skylink.connected = true;
 
             } else if (state === 'disconnected') {
               document.getElementById('connect').innerHTML = 'Join Room';
+              skylink.connected = false;
             }
 
           } else if (['connecting', 'disconnecting', 'fetching'].indexOf(state) > -1) {
@@ -354,6 +377,7 @@
             enableButton('screen-av', false);
             enableButton('screen-v', false);
             enableButton('screen-none', false);
+            enableButton('connect', false);
           }
         },
 
@@ -376,28 +400,47 @@
           } else if (['stream'].indexOf(state) > -1) {
             document.getElementById('remote-stream-info').innerHTML = 'None';
 
-            if (streams.remote.stream.settings.audio && streams.remote.stream.settings.video) {
-              document.getElementById('remote-stream-info').innerHTML = 'Audio & Video';
+            if (streams.remote.connected) {
+              if (streams.remote.settings.audio && streams.remote.settings.video) {
+                document.getElementById('remote-stream-info').innerHTML = 'Audio & Video';
 
-            } else if (streams.remote.stream.settings.audio) {
-              document.getElementById('remote-stream-info').innerHTML = 'Audio Only';
+              } else if (streams.remote.settings.audio) {
+                document.getElementById('remote-stream-info').innerHTML = 'Audio Only';
 
-            } else if (streams.remote.stream.settings.video) {
-              document.getElementById('remote-stream-info').innerHTML = 'Video Only';
+              } else if (streams.remote.settings.video) {
+                document.getElementById('remote-stream-info').innerHTML = 'Video Only';
+              }
+
+              if (streams.remote.settings.video && typeof streams.remote.settings.video === 'object' && streams.remote.settings.video.screen) {
+                document.getElementById('remote-stream-info').innerHTML += ' (Screen)';
+              }
+
+              if (streams.remote.mediaStatus.audioMuted && streams.remote.mediaStatus.videoMuted) {
+                document.getElementById('remote-stream-info-mute').innerHTML = 'Audio & Video';
+
+              } else if (streams.remote.mediaStatus.audioMuted) {
+                document.getElementById('remote-stream-info-mute').innerHTML = 'Audio Only';
+
+              } else if (streams.remote.mediaStatus.videoMuted) {
+                document.getElementById('remote-stream-info-mute').innerHTML = 'Video Only';
+
+              } else {
+                document.getElementById('remote-stream-info-mute').innerHTML = 'None';
+              }
+
+              document.getElementById('remote-stream-info-end').innerHTML = streams.remote.ended ? 'Yes' : 'No';
+
+            } else {
+              document.getElementById('remote-stream-info').innerHTML = '-';
+              document.getElementById('remote-stream-info-mute').innerHTML = '-';
+              document.getElementById('remote-stream-info-end').innerHTML = '-';
             }
-
-            if (streams.remote.settings.video && typeof streams.remote.settings.video === 'object' && streams.remote.settings.video.screen) {
-              document.getElementById('remote-stream-info').innerHTML += ' (Screen)';
-            }
-
-            document.getElementById('remote-stream-info-mute').innerHTML =
-              'Audio ' + (streams.remote.stream.mediaStatus.audioMuted ? 'Muted' : 'Unmuted') + ' & ' +
-              'Video ' + (streams.remote.stream.mediaStatus.videoMuted ? 'Muted' : 'Unmuted');
 
             attachMediaStream( document.getElementById('remote-stream'), streams.remote.stream );
             document.getElementById('remote-stream').parentNode.className = 'col-12 video' + (streams.remote.stream ? ' active' : '');
           }
         }
+
       };
     }
 
@@ -411,13 +454,15 @@
         video: ['camera-av', 'camera-v'].indexOf(this.id) > -1
       };
 
+      setState().local('fetching');
       skylink.local.stopStream();
 
       if (!settings.audio && !settings.video) {
+        setState().local('fetched');
         return;
       }
 
-      if (Object.keys( skylink.local.getPeersInRoom() ).length === 0) {
+      if (!skylink.connected) {
         skylink.local.getUserMedia(settings, function (getUserMediaErr, stream) {
           if (getUserMediaErr) {
             return setState().remote('fetch-error', {
@@ -428,6 +473,7 @@
 
           streams.camera = stream;
           setState().local('stream');
+          setState().local('fetched');
         });
 
       } else {
@@ -441,6 +487,7 @@
 
           streams.camera = stream;
           setState().local('stream');
+          setState().local('fetched');
         });
       }
     };
@@ -450,8 +497,12 @@
     document.getElementById('screen-none').onchange = function () {
       var audio = document.getElementById('screen-av').checked;
 
+      setState().local('fetching');
+
       if (this.id === 'screen-none') {
-        return skylink.local.stopScreen();
+        setState().local('fetched');
+        skylink.local.stopScreen();
+        return 
       }
 
       skylink.local.shareScreen(audio, function (shareScreenErr, stream) {
@@ -464,6 +515,7 @@
 
         streams.screen = stream;
         setState().local('stream');
+        setState().local('fetched');
       });
     };
 
@@ -477,7 +529,7 @@
       var audioClassName = document.getElementById('audio-mute').className;
       var videoClassName = document.getElementById('video-mute').className;
 
-      console.info(this, this.id);
+      setState().local('fetching');
 
       if (this.id === 'audio-mute') {
         mutedSettings.audioMuted = !mutedSettings.audioMuted;
@@ -496,11 +548,13 @@
 
       document.getElementById('audio-mute').setAttribute('checked', mutedSettings.audioMuted.toString());
       document.getElementById('video-mute').setAttribute('checked', mutedSettings.videoMuted.toString());
+
+      setState().local('fetched');
     };
 
 
     document.getElementById('connect').onclick = function () {
-      if (Object.keys( skylink.local.getPeersInRoom() ).length === 0) {
+      if (!skylink.connected) {
         setState().local('connecting');
 
         skylink.local.joinRoom(function (localJoinRoomErr) {
