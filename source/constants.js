@@ -774,6 +774,16 @@ Skylink.prototype.SYSTEM_ACTION_REASON = {
 Skylink.prototype.VERSION = '@@version';
 
 /**
+ * Contains the current SDK Type.
+ * @attribute SDK_TYPE
+ * @type String
+ * @readOnly
+ * @for Skylink
+ * @since 0.6.x
+ */
+Skylink.prototype.SDK_TYPE = 'JS_WEB_SDK';
+
+/**
  * The list of <a href="#method_init"><code>init()</code> method</a> ready states.
  * @attribute READY_STATE_CHANGE
  * @param {Number} INIT      <small>Value <code>0</code></small>

@@ -459,6 +459,14 @@ Skylink.prototype.init = function(_options, _callback) {
   // `init({ forceSSL: true })`
   options.forceSSL = options.forceSSL !== false;
 
+  // `init({ stats: true })`
+  // Added by Leonardo Venoso ESS-989
+  options.stats = options.stats !== false;
+
+  // `init({ statsUrl: "https://xxx.xxx.xxx/" })`
+  // Added by Leonardo Venoso ESS-989
+  options.statsUrl = options.statsUrl || options.roomServer;
+
   // `init({ socketTimeout: 20000 })`
   options.socketTimeout = typeof options.socketTimeout === 'number' && options.socketTimeout >= 5000 ? options.socketTimeout : 7000;
 
@@ -733,6 +741,16 @@ Skylink.prototype.init = function(_options, _callback) {
     (self._initOptions.credentials ? '&' : '?') + 'rand=' + Date.now();
 
   self._loadInfo();
+
+  // Added by Leonardo Venoso ESS-989
+  console.log("*** CREATING STATS FACADE.");
+  self.stats = new StatsFacade({
+    enabled: this._initOptions.stats,
+    statsUrl: this._initOptions.statsUrl,
+    appKeyOwner: this._appKeyOwner || this._initOptions.appKey,
+    appKey: this._initOptions.appKey,
+    selectedRoom: this._initOptions.defaultRoom //remove if not needed
+  });
 };
 
 /**
@@ -789,6 +807,9 @@ Skylink.prototype._requestServerInfo = function(method, url, callback, params) {
       var status = xhr.status || (response.success ? 200 : 400);
 
       if (response.success) {
+        // Added by Leonardo Venoso ESS-989
+        self.stats.sendAuthInfo(response);
+
       	log.debug([null, 'XMLHttpRequest', method, 'Received sessions parameters ->'], response);
       	callback(response);
       	return;
@@ -812,6 +833,9 @@ Skylink.prototype._requestServerInfo = function(method, url, callback, params) {
       if (completed) {
         return;
       }
+
+      // Added by Leonardo Venoso ESS-989;
+      self.stats.sendAuthInfo(error);
       completed = true;
       log.error([null, 'XMLHttpRequest', method, 'Failed retrieving information with status ->'], xhr.status);
 

@@ -66,7 +66,7 @@ module.exports = function(grunt) {
                 files: {
                     '<%= production %>/skylink.debug.js': [
                         '<%= template %>/header.js',
-                        '<%= source %>/*.js',
+                        '<%= source %>/**/*.js',
                         '<%= template %>/footer.js'
                     ],
                     '<%= production %>/skylink.complete.js': [
