@@ -1,6 +1,9 @@
 'use strict';
+
+
 module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
+    grunt.loadNpmTasks('grunt-contrib-watch');
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -187,10 +190,20 @@ module.exports = function(grunt) {
                 },
                 expand: true,
                 cwd: 'bamboo/skylinkjs',
-                src: ['**/*.js'],
+                src: ['source/**/*.js'],
                 dest: 'bamboo/skylinkjsgz/'
             }
-        }
+        },
+
+        watch: {
+            all: {
+              files: ['source/**/*.js'],
+              tasks: ['publish'],
+              options: {
+                spawn: true
+              }
+            }
+          }
     });
 
     grunt.registerTask('versionise', 'Adds version meta intormation', function() {
@@ -262,6 +275,16 @@ module.exports = function(grunt) {
         'replace',
         'uglify',
         'yuidoc:doc'
+    ]);
+
+    grunt.registerTask('watch-publish', [
+    	'versionise',
+        'clean:production',
+        'concat',
+        'replace',
+        'uglify',
+        'yuidoc:doc',
+        'watch'
     ]);
 
     grunt.registerTask('dev', [
