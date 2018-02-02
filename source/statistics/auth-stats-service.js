@@ -1,5 +1,12 @@
+/**
+ * AuthStatsService constructor.
+ *
+ * @public
+ * @for Skylink
+ * @since 0.6.x
+ * @author Leonardo Venoso
+ */
 function AuthStatsService(options) {
-    this.appKeyOwner = options.appKeyOwner;
     this.appKey = options.appKey;
     this.enabled = options.enabled;
     this.statsUrl = options.statsUrl;
@@ -12,19 +19,19 @@ AuthStatsService.prototype.constructor = AuthStatsService;
 /**
  * It sends the auth stats.
  *
- * @method sendStats
+ * @method send
  * @public
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
  * @return {Object} XMLHttpRequest response for success or error.
  */
-AuthStatsService.prototype.sendStats = function(response) {
+AuthStatsService.prototype.send = function(response) {
     if(!this.enabled)
         return;
 
     console.log("Sending auth information stats.");
-    new HTTP().doPost(this._buildURL(this.ENDPOINTS.auth), this._buildAuthObj(response));
+    new HTTP().doPost(this._buildURL(this.getEndpoints().auth), this._buildAuthObj(response));
 };
 
 /**
@@ -36,7 +43,12 @@ AuthStatsService.prototype.sendStats = function(response) {
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {Object} XMLHttpRequest response for success or error
- * @return {Object} {client_id: String, app_key: String, api_url: String, api_result: String}
+ * @return {Object} {
+ *  client_id: String,
+ *  app_key: String,
+ *  api_url: String,
+ *  api_result: String
+ * }
  */
 AuthStatsService.prototype._buildAuthObj = function(response) {
     return {
@@ -61,5 +73,5 @@ AuthStatsService.prototype._buildAuthObj = function(response) {
  * @return {String} The url with https://xxx.xxx.xxx./api/rest/stats/client'
  */
 AuthStatsService.prototype._buildURL = function(endPoint) {
-    return this.statsUrl + '/' + this._BASE_URL + '/' + endPoint;
+    return this.statsUrl + '/' + this.getBaseUrl() + '/' + endPoint;
 };

@@ -7,7 +7,6 @@
  * @author Leonardo Venoso
  */
 function PeerInfoStatsService(options) {
-    this.appKeyOwner = options.appKeyOwner;
     this.appKey = options.appKey;
     this.enabled = options.enabled;
     this.statsUrl = options.statsUrl;
@@ -48,7 +47,10 @@ PeerInfoStatsService.prototype._buildPeerInfoObj = function(mediaStream) {
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {MediaStream} WebRTC MediaStream
- * @return {Object} {audio: Object, video: Object}
+ * @return {Object} {
+ *  audio: Object,
+ *  video: Object
+ * }
  */
 PeerInfoStatsService.prototype._buildMediaObj = function(mediaStream) {
     return {
@@ -65,7 +67,10 @@ PeerInfoStatsService.prototype._buildMediaObj = function(mediaStream) {
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @return {Object} {name: String, version: String}
+ * @return {Object} {
+ *  name: String,
+ *  version: String
+ * }
  */
 PeerInfoStatsService.prototype._buildSDKObj = function() {
     return {
@@ -82,7 +87,10 @@ PeerInfoStatsService.prototype._buildSDKObj = function() {
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @return {Object} {platform: String, name: String}
+ * @return {Object} {
+ *  platform: String,
+ *  name: String
+ * }
  */
 PeerInfoStatsService.prototype._buildAgentObj = function() {
     return {
@@ -103,7 +111,12 @@ PeerInfoStatsService.prototype._buildAgentObj = function() {
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {Array} WebRTC audio MediaStreamTracks
- * @return {Array} [{ id: String, stream_id: String }]
+ * @return {Array} [
+ *  {
+ *    id: String,
+ *    stream_id: String
+ *  }
+ * ]
  */
 PeerInfoStatsService.prototype._buildAudioTracksObj = function(audioTracks) {
     var audioMedia = [];
@@ -111,8 +124,8 @@ PeerInfoStatsService.prototype._buildAudioTracksObj = function(audioTracks) {
     try {
         for(var i = 0; i < audioTracks.length; i++)
             audioMedia.push({
-                'id': audioTracks[i].id,
-                'stream_id': audioTracks[i].stream_id
+                'id': audioTracks[i].id || null,
+                'stream_id': audioTracks[i].stream_id || null
             });
     } catch(error) {
         audioMedia = [];
@@ -130,7 +143,14 @@ PeerInfoStatsService.prototype._buildAudioTracksObj = function(audioTracks) {
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {Array} WebRTC video MediaStreamTracks
- * @return {Object} [{ id: String, stream_id: String, resolution_width: Integer, resolution_height: Integer }, ...n]
+ * @return {Object} [
+ *  {
+ *    id: String,
+ *    stream_id: String,
+ *    resolution_width: Integer,
+ *    resolution_height: Integer
+ *  }
+ * ]
  */
 PeerInfoStatsService.prototype._buildVideoTracksObj = function(videoTracks) {
     var videoMedia = [];
@@ -138,8 +158,8 @@ PeerInfoStatsService.prototype._buildVideoTracksObj = function(videoTracks) {
     try {
         for(var i = 0; i < videoTracks.length; i++)
             videoMedia.push({
-                'id': videoTracks[i].id || '',
-                'stream_id': videoTracks[i].stream_id || '',
+                'id': videoTracks[i].id || null,
+                'stream_id': videoTracks[i].stream_id || null,
                 'resolution_width': videoTracks[i].resolution_width || null,
                 'resolution_height': videoTracks[i].resolution_height || null
             });
@@ -164,24 +184,30 @@ PeerInfoStatsService.prototype._buildVideoTracksObj = function(videoTracks) {
  * @return {String} The url with https://xxx.xxx.xxx./api/rest/stats/client'
  */
 PeerInfoStatsService.prototype._buildURL = function(endPoint) {
-    return this.statsUrl + '/' + this._BASE_URL + '/' + endPoint;
+    return this.statsUrl + '/' + this.getBaseUrl() + '/' + endPoint;
 };
 
 /**
  * It posts the client information (agent, media, etc).
  *
- * @method sendStats
+ * @method send
  * @public
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {MediaStream} WebRTC MediaStream
- * @return {Object} {client_id: String, app_key: String, sdk: Object, agent: Object, media: Object}
+ * @return {Object} {
+ *   client_id: String,
+ *   app_key: String,
+ *   sdk: Object,
+ *   agent: Object,
+ *   media: Object
+ * }
  */
-PeerInfoStatsService.prototype.sendStats = function(mediaStream) {
+PeerInfoStatsService.prototype.send = function(mediaStream) {
     if(!this.enabled)
         return;
 
-    console.log("Sending peer information stats.");
-    new HTTP().doPost(this._buildURL(this.ENDPOINTS.client), this._buildPeerInfoObj(mediaStream));
+    console.log("Sending auth information stats.");
+    new HTTP().doPost(this._buildURL(this.getEndpoints().client), this._buildPeerInfoObj(mediaStream));
 };

@@ -13,14 +13,17 @@ function StatsBaseService() {
 StatsBaseService.prototype.constructor = StatsBaseService;
 
 /**
- * Stats ase url.
+ * Stats base url.
  *
- * @private
+ * @public
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
+ * @return {String} Chunk of base URL
  */
-StatsBaseService.prototype._BASE_URL = 'rest/stats';
+StatsBaseService.prototype.getBaseUrl = function() {
+    return 'rest/stats';
+};
 
 /**
  * Stats endpoints.
@@ -29,15 +32,18 @@ StatsBaseService.prototype._BASE_URL = 'rest/stats';
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
+ * @return {Object} Endpoints { name: "URL chunk" }
  */
-StatsBaseService.prototype.ENDPOINTS = {
-    'client': 'client',
-    'auth': 'auth',
-    'signalingAuth': 'signaling',
-    'signallingSocket': 'client/signaling',
-    'iceconnection': 'client/iceconnection',
-    'icecandidate': 'client/icecandidate',
-    'negotiation': 'client/negotiation',
-    'bandwidth': 'client/bandwidth',
-    'recording': 'client/recording'
+StatsBaseService.prototype.getEndpoints = function() {
+    return {
+        'client': 'client',
+        'auth': 'auth',
+        'clientSignaling': 'signaling',
+        'signallingSocket': 'client/signaling',
+        'iceconnection': 'client/iceconnection',
+        'icecandidate': 'client/icecandidate',
+        'negotiation': 'client/negotiation',
+        'bandwidth': 'client/bandwidth',
+        'recording': 'client/recording'
+    };
 };

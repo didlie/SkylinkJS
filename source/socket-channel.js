@@ -300,6 +300,10 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   socket.on('reconnect_attempt', function (attempt) {
     retries++;
     self._socketSession.attempts++;
+
+    // Added by Leonardo Venoso ESS-989
+    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, "buildStatsObject", "reconnect_attempt"));
+
     self._trigger('channelRetry', fallbackType, self._socketSession.attempts, clone(self._socketSession));
   });
 
@@ -321,6 +325,9 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   });
 
   socket.on('connect', function () {
+    // Added by Leonardo Venoso ESS-989
+    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, "buildStatsObject", "connect"));
+
     if (!self._channelOpen) {
       log.log([null, 'Socket', null, 'Channel opened']);
       self._channelOpen = true;
@@ -329,6 +336,9 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   });
 
   socket.on('reconnect', function () {
+    // Added by Leonardo Venoso ESS-989
+    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, "buildStatsObject", "reconnect"));
+
     if (!self._channelOpen) {
       log.log([null, 'Socket', null, 'Channel opened']);
       self._channelOpen = true;
@@ -337,6 +347,9 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   });
 
   socket.on('error', function(error) {
+    // Added by Leonardo Venoso ESS-989
+    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, "buildStatsObject", "error"));
+
     if (error ? error.message.indexOf('xhr poll error') > -1 : false) {
       log.error([null, 'Socket', null, 'XHR poll connection unstable. Disconnecting.. ->'], error);
       self._closeChannel();
@@ -347,6 +360,9 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   });
 
   socket.on('disconnect', function() {
+    // Added by Leonardo Venoso ESS-989
+    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, "buildStatsObject", "disconnect"));
+
     if (self._channelOpen) {
       self._channelOpen = false;
       self._trigger('channelClose', clone(self._socketSession));
@@ -383,6 +399,26 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
     }
   });
   self._socket = socket;
+};
+
+/**
+ * It builds the socket stats object.
+ *
+ * @method _buildStatsObject
+ * @private
+ * @for Skylink
+ * @since 0.5.5
+ * @author Leonardo Venoso
+ */
+Skylink.prototype._buildStatsObject = function(currentState) {
+  return {
+    'room_id': this._initOptions.defaultRoom,
+    'state': currentState,
+    'server': this._signalingServer,
+    'port': this._signalingServerPort,
+    'transport': this._socketSession.transportType,
+    'attempts': this._socketSession.attempts
+  };
 };
 
 /**

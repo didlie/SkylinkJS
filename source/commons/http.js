@@ -9,6 +9,8 @@ function HTTP() {
     this.http = this._createXMLHttpRequest();
 };
 
+HTTP.prototype.constructor = HTTP;
+
 /**
  * It executes a post request.
  *
@@ -89,9 +91,7 @@ HTTP.prototype._createXMLHttpRequest = function() {
 HTTP.prototype._tryExecuteHTTPRequest = function(method, params) {
     try {
         var statistic = JSON.stringify(params);
-
         console.log('Sending statistics', statistic);
-
         this.http.send(statistic);
     } catch(e) {
         console.log([null, 'XMLHttpRequest', method, 'Failed XMLHttpRequest.'], e);

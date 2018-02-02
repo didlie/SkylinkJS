@@ -747,7 +747,7 @@ Skylink.prototype.init = function(_options, _callback) {
   self.stats = new StatsFacade({
     enabled: this._initOptions.stats,
     statsUrl: this._initOptions.statsUrl,
-    appKeyOwner: this._appKeyOwner || this._initOptions.appKey,
+    appKeyOwner: this._appKeyOwner,
     appKey: this._initOptions.appKey,
     selectedRoom: this._initOptions.defaultRoom //remove if not needed
   });
