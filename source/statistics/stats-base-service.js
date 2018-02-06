@@ -5,9 +5,13 @@
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
+ * @param {JSON}
  */
-function StatsBaseService() {
-
+function StatsBaseService(options) {
+    this.appKey = options.appKey;
+    this.enabled = options.enabled;
+    this.statsUrl = options.statsUrl;
+    this.client_id = options.client_id;
 };
 
 StatsBaseService.prototype.constructor = StatsBaseService;
@@ -32,18 +36,34 @@ StatsBaseService.prototype.getBaseUrl = function() {
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @return {Object} Endpoints { name: "URL chunk" }
+ * @return {JSON} Endpoints { name: "URL chunk" }
  */
 StatsBaseService.prototype.getEndpoints = function() {
     return {
         'client': 'client',
         'auth': 'auth',
         'clientSignaling': 'signaling',
-        'signallingSocket': 'client/signaling',
+        'signalingSocket': 'client/signaling',
         'iceconnection': 'client/iceconnection',
         'icecandidate': 'client/icecandidate',
         'negotiation': 'client/negotiation',
         'bandwidth': 'client/bandwidth',
         'recording': 'client/recording'
     };
+};
+
+/**
+ * It builds a URL concatenating statsUrl, which was set at the configuration file, plus BASE_URL
+ * and the correspoiding endpoint.
+ *
+ * @method _buildURL
+ * @private
+ * @for Skylink
+ * @since 0.6.x
+ * @author Leonardo Venoso
+ * @param {String} endPoint Example: /api/stats
+ * @return {String} The url with https://xxx.xxx.xxx./api/rest/stats/client'
+ */
+StatsBaseService.prototype._buildURL = function(endPoint) {
+    return this.statsUrl + '/' + this.getBaseUrl() + '/' + endPoint;
 };

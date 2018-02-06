@@ -29,6 +29,18 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
 
     log.debug([targetMid, 'RTCIceCandidate', candidateType, 'Generated ICE candidate ->'], candidate);
 
+    // Added by Leonardo Venoso - ESS-989
+    self.stats.sendIceAgentInfo({
+      'room_id': self._initOptions.defaultRoom,
+      'user_id': self._user.uid,
+      'peer_id': self._socket.id,
+      'is_trickle': self._initOptions.enableIceTrickle,
+      'is_controlling': self.is_controlling || true,
+      'state': pc.iceConnectionState,
+      'local_candidate': this._buildCandidateObjectForStats(candidate),
+      'remote_candidate': null
+    });
+
     if (candidateType === 'endOfCandidates' || !(self._peerConnections[targetMid] &&
       self._peerConnections[targetMid].localDescription && self._peerConnections[targetMid].localDescription.sdp &&
       self._peerConnections[targetMid].localDescription.sdp.indexOf('\r\na=mid:' + candidate.sdpMid + '\r\n') > -1)) {
@@ -124,6 +136,28 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
     }
   }
 };
+
+/**
+ * Function that buffers the Peer connection ICE candidate when received
+ * before remote session description is received and set.
+ * @method _addIceCandidateToQueue
+ * @private
+ * @for Skylink
+ * @since 0.6.x
+ * @author Leonardo Venoso
+ * @param {RTCIceCandidate}
+ * @return {JSON}
+ */
+Skylink.prototype._buildCandidateObjectForStats = function(candidate) {
+  return {
+    'address': candidate.ip,
+    'port': candidate.port,
+    'candidateType': candidate.type,
+    'network_type': candidate.network_type || null,
+    'transport': candidate.protocol,
+    'priority': candidate.priority
+  };
+}
 
 /**
  * Function that buffers the Peer connection ICE candidate when received
@@ -227,6 +261,18 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
       sdpMid: candidate.sdpMid,
       sdpMLineIndex: candidate.sdpMLineIndex
     }, null);
+
+  // Added by Leonardo Venoso - ESS-989
+  self.stats.sendIceAgentInfo({
+    'room_id': self._initOptions.defaultRoom,
+    'user_id': self._user.uid,
+    'peer_id': self._socket.id,
+    'is_trickle': self._initOptions.enableIceTrickle,
+    'is_controlling': self.is_controlling || false,
+    'state': self._peerConnections[targetMid].iceConnectionState,
+    'local_candidate': null,
+    'remote_candidate': self._buildCandidateObjectForStats(candidate)
+  });
 
   if (!(self._peerConnections[targetMid] &&
     self._peerConnections[targetMid].signalingState !== self.PEER_CONNECTION_STATE.CLOSED &&

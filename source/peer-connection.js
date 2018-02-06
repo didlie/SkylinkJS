@@ -1897,7 +1897,6 @@ Skylink.prototype._createPeerConnection = function(targetMid, isScreenSharing, c
 
   pc.oniceconnectionstatechange = function(evt) {
     var iceConnectionState = pc.iceConnectionState;
-
     log.debug([targetMid, 'RTCIceConnectionState', null, 'Ice connection state changed ->'], iceConnectionState);
 
     if (AdapterJS.webrtcDetectedBrowser === 'edge') {

@@ -302,7 +302,7 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
     self._socketSession.attempts++;
 
     // Added by Leonardo Venoso ESS-989
-    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, "buildStatsObject", "reconnect_attempt"));
+    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, 'reconnect_attempt'));
 
     self._trigger('channelRetry', fallbackType, self._socketSession.attempts, clone(self._socketSession));
   });
@@ -326,7 +326,7 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
 
   socket.on('connect', function () {
     // Added by Leonardo Venoso ESS-989
-    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, "buildStatsObject", "connect"));
+    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, 'connect'));
 
     if (!self._channelOpen) {
       log.log([null, 'Socket', null, 'Channel opened']);
@@ -337,7 +337,7 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
 
   socket.on('reconnect', function () {
     // Added by Leonardo Venoso ESS-989
-    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, "buildStatsObject", "reconnect"));
+    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, 'reconnect'));
 
     if (!self._channelOpen) {
       log.log([null, 'Socket', null, 'Channel opened']);
@@ -348,7 +348,7 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
 
   socket.on('error', function(error) {
     // Added by Leonardo Venoso ESS-989
-    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, "buildStatsObject", "error"));
+    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, 'error'));
 
     if (error ? error.message.indexOf('xhr poll error') > -1 : false) {
       log.error([null, 'Socket', null, 'XHR poll connection unstable. Disconnecting.. ->'], error);
@@ -361,7 +361,7 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
 
   socket.on('disconnect', function() {
     // Added by Leonardo Venoso ESS-989
-    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, "buildStatsObject", "disconnect"));
+    self.stats.sendClientSignalingInfo(self._buildStatsObject.call(self, 'disconnect'));
 
     if (self._channelOpen) {
       self._channelOpen = false;

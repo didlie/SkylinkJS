@@ -5,34 +5,15 @@
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
+ * @param {JSON}
  */
 function AuthStatsService(options) {
-    this.appKey = options.appKey;
-    this.enabled = options.enabled;
-    this.statsUrl = options.statsUrl;
-    this.client_id = options.client_id;
+    StatsBaseService.call(this, options);
 };
 
 AuthStatsService.prototype = Object.create(StatsBaseService.prototype);
 AuthStatsService.prototype.constructor = AuthStatsService;
 
-/**
- * It sends the auth stats.
- *
- * @method send
- * @public
- * @for Skylink
- * @since 0.6.x
- * @author Leonardo Venoso
- * @return {Object} XMLHttpRequest response for success or error.
- */
-AuthStatsService.prototype.send = function(response) {
-    if(!this.enabled)
-        return;
-
-    console.log("Sending auth information stats.");
-    new HTTP().doPost(this._buildURL(this.getEndpoints().auth), this._buildAuthObj(response));
-};
 
 /**
  * It builds the auth stats object.
@@ -42,13 +23,8 @@ AuthStatsService.prototype.send = function(response) {
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @param {Object} XMLHttpRequest response for success or error
- * @return {Object} {
- *  client_id: String,
- *  app_key: String,
- *  api_url: String,
- *  api_result: String
- * }
+ * @param {JSON} XMLHttpRequest response for success or error
+ * @return {JSON}
  */
 AuthStatsService.prototype._buildAuthObj = function(response) {
     return {
@@ -61,17 +37,19 @@ AuthStatsService.prototype._buildAuthObj = function(response) {
 };
 
 /**
- * It builds a URL concatenating statsUrl, which was set at the configuration file, plus BASE_URL
- * and the correspoiding endpoint.
+ * It sends the auth stats (api url, result, etc).
  *
- * @method _buildURL
- * @private
+ * @method send
+ * @public
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @param {String} endPoint Example: /api/stats
- * @return {String} The url with https://xxx.xxx.xxx./api/rest/stats/client'
+ * @return {JSON} XMLHttpRequest response for success or error.
  */
-AuthStatsService.prototype._buildURL = function(endPoint) {
-    return this.statsUrl + '/' + this.getBaseUrl() + '/' + endPoint;
+AuthStatsService.prototype.send = function(response) {
+    if(!this.enabled)
+        return;
+
+    console.log("Sending auth information.");
+    new HTTP().doPost(this._buildURL(this.getEndpoints().auth), this._buildAuthObj(response));
 };

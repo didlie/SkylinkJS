@@ -1,77 +1,26 @@
 /**
  * Stats Facade constructor.
  * It creates the client_id.
- * It initialises all the stats services with the options param.
+ * It initialises all the stats services with the _options param.
  *
  * @public
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @param {Object} {
- *  enabled: Boolean,
- *  statsUrl: String,
- *  appKeyOwner: String,
- *  appKey: String,
- *  selectedRoom: String
- * }
+ * @param {JSON}
  */
 
 function StatsFacade(options) {
-    this.options = options;
-    this.options.client_id = this._createClientId();
+    this._options = options;
+    this._options.client_id = this._createClientId();
 
-    this.peerInfoStatsService = new PeerInfoStatsService(this.options);
-    this.authInfoStatsService = new AuthStatsService(this.options);
-    this.clientSignallingStatsService = new ClientSignallingStatsService(this.options);
+    this.peerInfoStatsService = new PeerInfoStatsService(this._options);
+    this.authInfoStatsService = new AuthStatsService(this._options);
+    this.clientSignalingStatsService = new ClientSignalingStatsService(this._options);
+    this.iceAgentStatsService = new IceAgentStatsService(this._options);
 };
 
 StatsFacade.prototype.constructor = StatsFacade;
-
-/**
- * It sends the peer info to the server.
- *
- * @public
- * @for Skylink
- * @since 0.6.x
- * @author Leonardo Venoso
- * @param {MediaStream} WebRTC media stream
- */
-StatsFacade.prototype.sendPeerInfo = function(mediaStream) {
-    this.peerInfoStatsService.send(mediaStream);
-};
-
-/**
- * It sends the auth info to the server.
- *
- * @public
- * @for Skylink
- * @since 0.6.x
- * @author Leonardo Venoso
- * @param {Object} Response from the XMLHTTPRequest for either success or error.
- */
-StatsFacade.prototype.sendAuthInfo = function(response) {
-    this.authInfoStatsService.send(response);
-};
-
-/**
- * It sends the client signalling info to the server.
- *
- * @public
- * @for Skylink
- * @since 0.6.x
- * @author Leonardo Venoso
- * @param {Object} {
- *  room_id: String,
- *  state: String,
- *  server: String,
- *  port: Integer,
- *  transport: String,
- *  attempts: Integer
- * }
- */
-StatsFacade.prototype.sendClientSignalingInfo = function(options) {
-    this.clientSignallingStatsService.send(options);
-};
 
 /**
  * It creates the client id concatenating (this.appKeyOwner || 'dummy') _ + Date.now() + a random number.
@@ -87,5 +36,57 @@ StatsFacade.prototype.sendClientSignalingInfo = function(options) {
  * @return {String} Client id
  */
 StatsFacade.prototype._createClientId = function() {
-    return (this.options.appKeyOwner  || 'dummy') + '_' + (Date.now() + Math.floor(Math.random() * 1000000));
+    return (this._options.appKeyOwner  || 'dummy') + '_' + (Date.now() + Math.floor(Math.random() * 1000000));
+};
+
+/**
+ * It sends the peer info to the server.
+ *
+ * @public
+ * @for Skylink
+ * @since 0.6.x
+ * @author Leonardo Venoso
+ * @param {MediaStream} WebRTC media stream.
+ */
+StatsFacade.prototype.sendPeerInfo = function(mediaStream) {
+    this.peerInfoStatsService.send(mediaStream);
+};
+
+/**
+ * It sends the auth info to the server.
+ *
+ * @public
+ * @for Skylink
+ * @since 0.6.x
+ * @author Leonardo Venoso
+ * @param {JSON} Response from the XMLHTTPRequest for either success or error.
+ */
+StatsFacade.prototype.sendAuthInfo = function(response) {
+    this.authInfoStatsService.send(response);
+};
+
+/**
+ * It sends the client signaling info to the server.
+ *
+ * @public
+ * @for Skylink
+ * @since 0.6.x
+ * @author Leonardo Venoso
+ * @param {JSON}
+ */
+StatsFacade.prototype.sendClientSignalingInfo = function(options) {
+    this.clientSignalingStatsService.send(options);
+};
+
+/**
+ * It sends ICE state information.
+ *
+ * @public
+ * @for Skylink
+ * @since 0.6.x
+ * @author Leonardo Venoso
+ * @param {JSON}
+ */
+StatsFacade.prototype.sendIceAgentInfo = function(options) {
+    this.iceAgentStatsService.send(options);
 };

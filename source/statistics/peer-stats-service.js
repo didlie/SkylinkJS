@@ -5,12 +5,10 @@
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
+ * @param {JSON}
  */
 function PeerInfoStatsService(options) {
-    this.appKey = options.appKey;
-    this.enabled = options.enabled;
-    this.statsUrl = options.statsUrl;
-    this.client_id = options.client_id;
+    StatsBaseService.call(this, options);
 };
 
 PeerInfoStatsService.prototype = Object.create(StatsBaseService.prototype);
@@ -25,7 +23,7 @@ PeerInfoStatsService.prototype.constructor = PeerInfoStatsService;
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {MediaStream} WebRTC MediaStream
- * @return {Object} {client_id: String, app_key: String, sdk: Object, agent: Object, media: Object}
+ * @return {JSON}
  */
 PeerInfoStatsService.prototype._buildPeerInfoObj = function(mediaStream) {
     return {
@@ -47,10 +45,7 @@ PeerInfoStatsService.prototype._buildPeerInfoObj = function(mediaStream) {
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {MediaStream} WebRTC MediaStream
- * @return {Object} {
- *  audio: Object,
- *  video: Object
- * }
+ * @return {JSON}
  */
 PeerInfoStatsService.prototype._buildMediaObj = function(mediaStream) {
     return {
@@ -67,10 +62,7 @@ PeerInfoStatsService.prototype._buildMediaObj = function(mediaStream) {
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @return {Object} {
- *  name: String,
- *  version: String
- * }
+ * @return {JSON}
  */
 PeerInfoStatsService.prototype._buildSDKObj = function() {
     return {
@@ -87,7 +79,7 @@ PeerInfoStatsService.prototype._buildSDKObj = function() {
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @return {Object} {
+ * @return {JSON} {
  *  platform: String,
  *  name: String
  * }
@@ -111,12 +103,7 @@ PeerInfoStatsService.prototype._buildAgentObj = function() {
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {Array} WebRTC audio MediaStreamTracks
- * @return {Array} [
- *  {
- *    id: String,
- *    stream_id: String
- *  }
- * ]
+ * @return {Array}
  */
 PeerInfoStatsService.prototype._buildAudioTracksObj = function(audioTracks) {
     var audioMedia = [];
@@ -143,14 +130,7 @@ PeerInfoStatsService.prototype._buildAudioTracksObj = function(audioTracks) {
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {Array} WebRTC video MediaStreamTracks
- * @return {Object} [
- *  {
- *    id: String,
- *    stream_id: String,
- *    resolution_width: Integer,
- *    resolution_height: Integer
- *  }
- * ]
+ * @return {JSON}
  */
 PeerInfoStatsService.prototype._buildVideoTracksObj = function(videoTracks) {
     var videoMedia = [];
@@ -170,25 +150,8 @@ PeerInfoStatsService.prototype._buildVideoTracksObj = function(videoTracks) {
     return videoMedia;
 };
 
-
 /**
- * It builds a URL concatenating statsUrl, which was set at the configuration file, plus BASE_URL
- * and the correspoiding endpoint.
- *
- * @method _buildURL
- * @private
- * @for Skylink
- * @since 0.6.x
- * @author Leonardo Venoso
- * @param {String} endPoint Example: /api/stats
- * @return {String} The url with https://xxx.xxx.xxx./api/rest/stats/client'
- */
-PeerInfoStatsService.prototype._buildURL = function(endPoint) {
-    return this.statsUrl + '/' + this.getBaseUrl() + '/' + endPoint;
-};
-
-/**
- * It posts the client information (agent, media, etc).
+ * It posts the peer information (agent, media, etc).
  *
  * @method send
  * @public
@@ -196,7 +159,7 @@ PeerInfoStatsService.prototype._buildURL = function(endPoint) {
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {MediaStream} WebRTC MediaStream
- * @return {Object} {
+ * @return {JSON} {
  *   client_id: String,
  *   app_key: String,
  *   sdk: Object,

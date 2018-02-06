@@ -34,7 +34,7 @@ HTTP.prototype.doPost = function(url, params, successCb, errorCb) {
  * @author Leonardo Venoso
  * @param {String} method POST/GET/etc
  * @param {String} url Example: /api/stats
- * @param {Object} params Any object to be sent in the request as parameter
+ * @param {JSON} params Any object to be sent in the request as parameter
  * @param {Function} successCb Function to be executed when the request succeed
  * @param {Function} errorCb Function to be executed when there is an error in the request
  */
@@ -86,7 +86,7 @@ HTTP.prototype._createXMLHttpRequest = function() {
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {String} method POST/GET/etc
- * @param {Object} Params
+ * @param {JSON} Params
  */
 HTTP.prototype._tryExecuteHTTPRequest = function(method, params) {
     try {
