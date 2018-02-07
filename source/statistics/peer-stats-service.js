@@ -1,14 +1,12 @@
 /**
- * PeerInfoStatsService constructor.
- *
- * @public
+ * @constructor
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {JSON}
  */
-function PeerInfoStatsService(options) {
-    StatsBaseService.call(this, options);
+function PeerInfoStatsService(params) {
+    StatsBaseService.call(this, params);
 };
 
 PeerInfoStatsService.prototype = Object.create(StatsBaseService.prototype);
@@ -79,10 +77,7 @@ PeerInfoStatsService.prototype._buildSDKObj = function() {
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @return {JSON} {
- *  platform: String,
- *  name: String
- * }
+ * @return {JSON}
  */
 PeerInfoStatsService.prototype._buildAgentObj = function() {
     return {
@@ -159,18 +154,14 @@ PeerInfoStatsService.prototype._buildVideoTracksObj = function(videoTracks) {
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {MediaStream} WebRTC MediaStream
- * @return {JSON} {
- *   client_id: String,
- *   app_key: String,
- *   sdk: Object,
- *   agent: Object,
- *   media: Object
- * }
+ * @return {JSON}
  */
 PeerInfoStatsService.prototype.send = function(mediaStream) {
     if(!this.enabled)
         return;
 
     console.log("Sending auth information stats.");
-    new HTTP().doPost(this._buildURL(this.getEndpoints().client), this._buildPeerInfoObj(mediaStream));
+    new HTTP().doPost(
+        this._buildURL(this.getEndpoints().client),
+        this._buildPeerInfoObj(mediaStream));
 };

@@ -1,14 +1,12 @@
 /**
- * IceAgentStatsService constructor.
- *
- * @public
+ * @constructor
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {JSON}
  */
-function IceAgentStatsService(options) {
-    StatsBaseService.call(this, options);
+function IceAgentStatsService(params) {
+    StatsBaseService.call(this, params);
 };
 
 IceAgentStatsService.prototype = Object.create(StatsBaseService.prototype);
@@ -26,11 +24,11 @@ IceAgentStatsService.prototype.constructor = IceAgentStatsService;
  * @return {JSON} {
  * }
  */
-IceAgentStatsService.prototype._buildIceAgentStateObj = function(options) {
-    options.timestamp = new Date().toISOString();
-    options.app_key = this.appKey;
-    options.client_id = this.client_id;
-    return options;
+IceAgentStatsService.prototype._buildIceAgentStateObj = function(params) {
+    params.timestamp = new Date().toISOString();
+    params.app_key = this.appKey;
+    params.client_id = this.client_id;
+    return params;
 };
 
 /**
@@ -43,12 +41,13 @@ IceAgentStatsService.prototype._buildIceAgentStateObj = function(options) {
  * @author Leonardo Venoso
  * @param {JSON}
  * */
-IceAgentStatsService.prototype.send = function(options) {
+IceAgentStatsService.prototype.send = function(params) {
     if(!this.enabled)
         return;
 
     console.log("Sending ICE agent state information.");
 
-    new HTTP().doPost(this._buildURL(this.getEndpoints().iceconnection),
-    this._buildIceAgentStateObj(options));
+    new HTTP().doPost(
+        this._buildURL(this.getEndpoints().iceconnection),
+        this._buildIceAgentStateObj(params));
 };

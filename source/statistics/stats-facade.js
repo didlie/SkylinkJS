@@ -1,23 +1,20 @@
 /**
- * Stats Facade constructor.
- * It creates the client_id.
- * It initialises all the stats services with the _options param.
- *
- * @public
+ * @constructor
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {JSON}
  */
 
-function StatsFacade(options) {
-    this._options = options;
-    this._options.client_id = this._createClientId();
+function StatsFacade(params) {
+    this._params = params;
+    this._params.client_id = this._createClientId();
 
-    this.peerInfoStatsService = new PeerInfoStatsService(this._options);
-    this.authInfoStatsService = new AuthStatsService(this._options);
-    this.clientSignalingStatsService = new ClientSignalingStatsService(this._options);
-    this.iceAgentStatsService = new IceAgentStatsService(this._options);
+    this.peerInfoStatsService = new PeerInfoStatsService(this._params);
+    this.authInfoStatsService = new AuthStatsService(this._params);
+    this.clientSignalingStatsService = new ClientSignalingStatsService(this._params);
+    this.iceAgentStatsService = new IceAgentStatsService(this._params);
+    this.iceCandidateStatsService = new IceCandidateStatsService(this._params);
 };
 
 StatsFacade.prototype.constructor = StatsFacade;
@@ -36,12 +33,13 @@ StatsFacade.prototype.constructor = StatsFacade;
  * @return {String} Client id
  */
 StatsFacade.prototype._createClientId = function() {
-    return (this._options.appKeyOwner  || 'dummy') + '_' + (Date.now() + Math.floor(Math.random() * 1000000));
+    return (this._params.appKeyOwner  || 'dummy') + '_' + (Date.now() + Math.floor(Math.random() * 1000000));
 };
 
 /**
  * It sends the peer info to the server.
  *
+ * @method sendPeerInfo
  * @public
  * @for Skylink
  * @since 0.6.x
@@ -55,6 +53,7 @@ StatsFacade.prototype.sendPeerInfo = function(mediaStream) {
 /**
  * It sends the auth info to the server.
  *
+ * @method sendAuthInfo
  * @public
  * @for Skylink
  * @since 0.6.x
@@ -68,25 +67,41 @@ StatsFacade.prototype.sendAuthInfo = function(response) {
 /**
  * It sends the client signaling info to the server.
  *
+ * @method sendClientSignalingInfo
  * @public
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {JSON}
  */
-StatsFacade.prototype.sendClientSignalingInfo = function(options) {
-    this.clientSignalingStatsService.send(options);
+StatsFacade.prototype.sendClientSignalingInfo = function(params) {
+    this.clientSignalingStatsService.send(params);
 };
 
 /**
- * It sends ICE state information.
+ * It sends ICE Agent state information.
  *
+ * @method sendIceAgentInfo
  * @public
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {JSON}
  */
-StatsFacade.prototype.sendIceAgentInfo = function(options) {
-    this.iceAgentStatsService.send(options);
+StatsFacade.prototype.sendIceAgentInfo = function(params) {
+    this.iceAgentStatsService.send(params);
+};
+
+/**
+ * It sends ICE Candidate/SDP state information.
+ *
+ * @method sendIceCandidateAndSDPInfo
+ * @public
+ * @for Skylink
+ * @since 0.6.x
+ * @author Leonardo Venoso
+ * @param {JSON}
+ */
+StatsFacade.prototype.sendIceCandidateAndSDPInfo = function(params) {
+    this.iceAgentStatsService.send(params);
 };

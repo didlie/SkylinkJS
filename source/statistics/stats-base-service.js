@@ -1,17 +1,15 @@
 /**
- * Stats shared behavior constructor.
- *
- * @public
+ * @constructor
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {JSON}
  */
-function StatsBaseService(options) {
-    this.appKey = options.appKey;
-    this.enabled = options.enabled;
-    this.statsUrl = options.statsUrl;
-    this.client_id = options.client_id;
+function StatsBaseService(params) {
+    this.appKey = params.appKey;
+    this.enabled = params.enabled;
+    this.statsUrl = params.statsUrl;
+    this.client_id = params.client_id;
 };
 
 StatsBaseService.prototype.constructor = StatsBaseService;
@@ -20,6 +18,7 @@ StatsBaseService.prototype.constructor = StatsBaseService;
  * Stats base url.
  *
  * @public
+ * @method getBaseUrl
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
@@ -32,6 +31,7 @@ StatsBaseService.prototype.getBaseUrl = function() {
 /**
  * Stats endpoints.
  *
+ * @method getEndpoints
  * @public
  * @for Skylink
  * @since 0.6.x

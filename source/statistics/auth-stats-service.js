@@ -1,14 +1,12 @@
 /**
- * AuthStatsService constructor.
- *
- * @public
+ * @constructor
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {JSON}
  */
-function AuthStatsService(options) {
-    StatsBaseService.call(this, options);
+function AuthStatsService(params) {
+    StatsBaseService.call(this, params);
 };
 
 AuthStatsService.prototype = Object.create(StatsBaseService.prototype);
@@ -51,5 +49,8 @@ AuthStatsService.prototype.send = function(response) {
         return;
 
     console.log("Sending auth information.");
-    new HTTP().doPost(this._buildURL(this.getEndpoints().auth), this._buildAuthObj(response));
+
+    new HTTP().doPost(
+        this._buildURL(this.getEndpoints().auth),
+        this._buildAuthObj(response));
 };

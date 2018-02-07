@@ -1,14 +1,12 @@
 /**
- * ClientSignalingStatsService constructor.
- *
- * @public
+ * @constructor
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
  * @param {JSON}
  */
-function ClientSignalingStatsService(options) {
-    StatsBaseService.call(this, options);
+function ClientSignalingStatsService(params) {
+    StatsBaseService.call(this, params);
 };
 
 ClientSignalingStatsService.prototype = Object.create(StatsBaseService.prototype);
@@ -25,17 +23,17 @@ ClientSignalingStatsService.prototype.constructor = ClientSignalingStatsService;
  * @param {MediaStream} WebRTC MediaStream
  * @return {JSON}
  */
-ClientSignalingStatsService.prototype._buildClientSignalingObj = function(options) {
+ClientSignalingStatsService.prototype._buildClientSignalingObj = function(params) {
     return {
         'client_id': this.client_id,
         'app_key': this.appKey,
-        'room_id': options.room_id,
+        'room_id': params.room_id,
         'timestamp': new Date().toISOString(),
-        'state': options.state,
-        'server': options.server,
-        'port': options.port,
-        'transport': options.transport,
-        'attempts': options.attempts
+        'state': params.state,
+        'server': params.server,
+        'port': params.port,
+        'transport': params.transport,
+        'attempts': params.attempts
     };
 };
 
@@ -49,12 +47,13 @@ ClientSignalingStatsService.prototype._buildClientSignalingObj = function(option
  * @author Leonardo Venoso
  * @param {JSON}
  * */
-ClientSignalingStatsService.prototype.send = function(options) {
+ClientSignalingStatsService.prototype.send = function(params) {
     if(!this.enabled)
         return;
 
     console.log("Sending signaling client information.");
+
     new HTTP().doPost(
         this._buildURL(this.getEndpoints().clientSignaling),
-        this._buildClientSignalingObj(options));
+        this._buildClientSignalingObj(params));
 };
