@@ -16,41 +16,34 @@ AuthStatsService.prototype.constructor = AuthStatsService;
 /**
  * It builds the auth stats object.
  *
- * @method _buildAuthObj
+ * @method _buildData
  * @private
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @param {JSON} XMLHttpRequest response for success or error
+ * @param {JSON} XMLHttpRequest params for success or error
  * @return {JSON}
  */
-AuthStatsService.prototype._buildAuthObj = function(response) {
+AuthStatsService.prototype._buildData = function(params) {
     return {
         'client_id': this.client_id,
         'app_key': this.appKey,
         'timestamp': new Date().toISOString(),
         'api_url': this.statsUrl,
-        'api_result': JSON.stringify(response)
+        'api_result': JSON.stringify(params)
     };
 };
 
 /**
- * It sends the auth stats (api url, result, etc).
+ * It gets the endpoint that corresponde to this service.
  *
- * @method send
+ * @method _getEndpoint
  * @public
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @return {JSON} XMLHttpRequest response for success or error.
+ * @return {String} with the endpoint URL chunk. Example: client/iceconnection
  */
-AuthStatsService.prototype.send = function(response) {
-    if(!this.enabled)
-        return;
-
-    console.log("Sending auth information.");
-
-    new HTTP().doPost(
-        this._buildURL(this.getEndpoints().auth),
-        this._buildAuthObj(response));
+AuthStatsService.prototype._getEndpoint = function() {
+    return this.getEndpoints().client;
 };

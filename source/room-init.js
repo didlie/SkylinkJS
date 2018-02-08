@@ -459,13 +459,17 @@ Skylink.prototype.init = function(_options, _callback) {
   // `init({ forceSSL: true })`
   options.forceSSL = options.forceSSL !== false;
 
-  // `init({ stats: true })`
+  // `init({ enableStats: true })`
   // Added by Leonardo Venoso ESS-989
-  options.stats = options.stats !== false;
+  options.enableStats = options.enableStats === true;
 
   // `init({ statsUrl: "https://xxx.xxx.xxx/" })`
   // Added by Leonardo Venoso ESS-989
   options.statsUrl = options.statsUrl || options.roomServer;
+
+  // `init({ enableStatsLog: "https://xxx.xxx.xxx/" })`
+  // Added by Leonardo Venoso ESS-989
+  options.enableStatsLog = options.enableStatsLog === true;
 
   // `init({ socketTimeout: 20000 })`
   options.socketTimeout = typeof options.socketTimeout === 'number' && options.socketTimeout >= 5000 ? options.socketTimeout : 7000;
@@ -745,11 +749,12 @@ Skylink.prototype.init = function(_options, _callback) {
   // Added by Leonardo Venoso ESS-989
   console.log("*** CREATING STATS FACADE.");
   self.stats = new StatsFacade({
-    enabled: this._initOptions.stats,
+    enableStats: this._initOptions.enableStats,
+    enableStatsLog: this._initOptions.enableStatsLog,
     statsUrl: this._initOptions.statsUrl,
     appKeyOwner: this._appKeyOwner,
     appKey: this._initOptions.appKey,
-    selectedRoom: this._initOptions.defaultRoom //remove if not needed
+    selectedRoom: this._selectedRoom //remove if not needed
   });
 };
 

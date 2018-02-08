@@ -15,7 +15,7 @@ PeerInfoStatsService.prototype.constructor = PeerInfoStatsService;
 /**
  * It builds the peerInfo object (agent, media, etc).
  *
- * @method _buildPeerInfoObj
+ * @method _buildData
  * @private
  * @for Skylink
  * @since 0.6.x
@@ -23,7 +23,7 @@ PeerInfoStatsService.prototype.constructor = PeerInfoStatsService;
  * @param {MediaStream} WebRTC MediaStream
  * @return {JSON}
  */
-PeerInfoStatsService.prototype._buildPeerInfoObj = function(mediaStream) {
+PeerInfoStatsService.prototype._buildData = function(mediaStream) {
     return {
         'client_id': this.client_id,
         'app_key': this.appKey,
@@ -146,22 +146,15 @@ PeerInfoStatsService.prototype._buildVideoTracksObj = function(videoTracks) {
 };
 
 /**
- * It posts the peer information (agent, media, etc).
+ * It gets the endpoint that corresponde to this service.
  *
- * @method send
+ * @method _getEndpoint
  * @public
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @param {MediaStream} WebRTC MediaStream
- * @return {JSON}
+ * @return {String} with the endpoint URL chunk. Example: client/iceconnection
  */
-PeerInfoStatsService.prototype.send = function(mediaStream) {
-    if(!this.enabled)
-        return;
-
-    console.log("Sending auth information stats.");
-    new HTTP().doPost(
-        this._buildURL(this.getEndpoints().client),
-        this._buildPeerInfoObj(mediaStream));
+PeerInfoStatsService.prototype._getEndpoint = function() {
+    return this.getEndpoints().client;
 };

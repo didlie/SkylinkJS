@@ -23,7 +23,7 @@ ClientSignalingStatsService.prototype.constructor = ClientSignalingStatsService;
  * @param {MediaStream} WebRTC MediaStream
  * @return {JSON}
  */
-ClientSignalingStatsService.prototype._buildClientSignalingObj = function(params) {
+ClientSignalingStatsService.prototype._buildData = function(params) {
     return {
         'client_id': this.client_id,
         'app_key': this.appKey,
@@ -38,22 +38,15 @@ ClientSignalingStatsService.prototype._buildClientSignalingObj = function(params
 };
 
 /**
- * It posts the client information (socket state, transport, attempts, etc).
+ * It gets the endpoint that corresponde to this service.
  *
- * @method send
+ * @method _getEndpoint
  * @public
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @param {JSON}
- * */
-ClientSignalingStatsService.prototype.send = function(params) {
-    if(!this.enabled)
-        return;
-
-    console.log("Sending signaling client information.");
-
-    new HTTP().doPost(
-        this._buildURL(this.getEndpoints().clientSignaling),
-        this._buildClientSignalingObj(params));
+ * @return {String} with the endpoint URL chunk. Example: client/iceconnection
+ */
+ClientSignalingStatsService.prototype._getEndpoint = function() {
+    return this.getEndpoints().client;
 };

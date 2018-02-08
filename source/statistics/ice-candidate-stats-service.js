@@ -15,7 +15,7 @@ IceCandidateStatsService.prototype.constructor = IceCandidateStatsService;
 /**
  * It builds the client ICE candidate/SDP object for the WebRTC stats.
  *
- * @method _buildIceCandidateObj
+ * @method _buildData
  * @private
  * @for Skylink
  * @since 0.6.x
@@ -23,30 +23,24 @@ IceCandidateStatsService.prototype.constructor = IceCandidateStatsService;
  * @param {JSON} WebRTC ICE candidate object.
  * @return {JSON}
  */
-IceCandidateStatsService.prototype._buildIceCandidateObj = function(params) {
+IceCandidateStatsService.prototype._buildData = function(params) {
     params.timestamp = new Date().toISOString();
     params.app_key = this.appKey;
     params.client_id = this.client_id;
+
     return params;
 };
 
 /**
- * It posts the ICE candidate information object.
+ * It gets the endpoint that corresponde to this service.
  *
- * @method send
+ * @method _getEndpoint
  * @public
  * @for Skylink
  * @since 0.6.x
  * @author Leonardo Venoso
- * @param {JSON}
- * */
-IceCandidateStatsService.prototype.send = function(params) {
-    if(!this.enabled)
-        return;
-
-    console.log("Sending ICE candidate/sdp information.");
-
-    new HTTP().doPost(
-        this._buildURL(this.getEndpoints().icecandidate),
-        this._buildIceCandidateObj(params));
+ * @return {String} with the endpoint URL chunk. Example: client/iceconnection
+ */
+IceCandidateStatsService.prototype._getEndpoint = function() {
+    return this.getEndpoints().client;
 };
