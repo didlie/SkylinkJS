@@ -1,8 +1,6 @@
 /**
  * @constructor
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON}
  */
 function NegotiationStatsService(params) {
@@ -18,13 +16,11 @@ NegotiationStatsService.prototype.constructor = NegotiationStatsService;
  *
  * @method buildData
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON} SDP negotiation state object.
  * @return {JSON}
  */
-NegotiationStatsService.prototype.buildData = function(params) {
+NegotiationStatsService.prototype._buildData = function(params) {
     params.timestamp = new Date().toISOString();
     params.app_key = this.appKey;
     params.client_id = this.client_id;
@@ -37,9 +33,7 @@ NegotiationStatsService.prototype.buildData = function(params) {
  *
  * @method _getEndpoint
  * @public
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @return {String} with the endpoint URL chunk. Example: client/iceconnection
  */
 NegotiationStatsService.prototype._getEndpoint = function() {

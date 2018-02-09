@@ -29,13 +29,11 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
 
     log.debug([targetMid, 'RTCIceCandidate', candidateType, 'Generated ICE candidate ->'], candidate);
 
-    // Added by Leonardo Venoso - ESS-989
     self.stats.sendIceAgentInfo({
       'room_id': self._selectedRoom,
       'user_id': self._user.uid,
       'peer_id': self._socket.id,
       'is_trickle': self._initOptions.enableIceTrickle,
-      'is_controlling': self.is_controlling || true,
       'state': pc.iceConnectionState,
       'local_candidate': this._buildCandidateObjForStats(candidate),
       'remote_candidate': null
@@ -45,7 +43,6 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
       self._peerConnections[targetMid].localDescription && self._peerConnections[targetMid].localDescription.sdp &&
       self._peerConnections[targetMid].localDescription.sdp.indexOf('\r\na=mid:' + candidate.sdpMid + '\r\n') > -1)) {
 
-      // Added by Leonardo Venoso - ESS-989
       var errorMsg = 'End-of-candidates signal or unused ICE candidates to prevent errors.';
       self.stats.sendIceCandidateAndSDPInfo(self._buildCandidateSDPObjForStats(candidate, null, errorMsg));
 
@@ -57,7 +54,6 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
     if (self._initOptions.filterCandidatesType[candidateType]) {
       if (!(self._hasMCU && self._initOptions.forceTURN)) {
 
-        // Added by Leonardo Venoso - ESS-989
         var errorMsg = 'Dropping of sending ICE candidate as it matches ICE candidate filtering flag.';
         self.stats.sendIceCandidateAndSDPInfo(self._buildCandidateSDPObjForStats(candidate, null, errorMsg));
 
@@ -85,7 +81,6 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
     });
 
     if (!self._initOptions.enableIceTrickle) {
-      // Added by Leonardo Venoso - ESS-989
       var errorMsg = 'Dropping of sending ICE candidate as it matches ICE candidate filtering flag.';
       self.stats.sendIceCandidateAndSDPInfo(self._buildCandidateSDPObjForStats(candidate, null, errorMsg));
 
@@ -96,7 +91,6 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
 
     log.debug([targetMid, 'RTCIceCandidate', candidateType, 'Sending ICE candidate ->'], candidate);
 
-    // Added by Leonardo Venoso - ESS-989. State is null because it's a local candidate.
     self.stats.sendIceCandidateAndSDPInfo(self._buildCandidateSDPObjForStats(candidate, null, null));
 
     self._sendChannelMessage({
@@ -159,9 +153,7 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
  *
  * @method _buildCandidateSDPObjForStats
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {RTCIceCandidate}
  * @param {String}
  * @param {String}
@@ -185,12 +177,10 @@ Skylink.prototype._buildCandidateSDPObjForStats = function(candidate, state, err
  *
  * @method _buildCandidateObjForStats
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {RTCIceCandidate}
  * @return {JSON}
- */
+//  */
 Skylink.prototype._buildCandidateObjForStats = function(candidate) {
   return {
     'address': candidate.ip,
@@ -225,7 +215,6 @@ Skylink.prototype._addIceCandidateToQueue = function(targetMid, canId, candidate
   this._peerCandidatesQueue[targetMid] = this._peerCandidatesQueue[targetMid] || [];
   this._peerCandidatesQueue[targetMid].push([canId, candidate]);
 
-  // Added by Leonardo Venoso - ESS-989.
   this.stats.sendIceCandidateAndSDPInfo(this._buildCandidateSDPObjForStats(candidate, 'buffered', null));
 };
 
@@ -288,7 +277,6 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
       sdpMLineIndex: candidate.sdpMLineIndex
     }, null);
 
-    // Added by Leonardo Venoso - ESS-989.
     self.stats.sendIceCandidateAndSDPInfo(self._buildCandidateSDPObjForStats(candidate, 'success', null));
   };
 
@@ -302,7 +290,6 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
       sdpMLineIndex: candidate.sdpMLineIndex
     }, error);
 
-    // Added by Leonardo Venoso - ESS-989.
     self.stats.sendIceCandidateAndSDPInfo(self._buildCandidateSDPObjForStats(candidate, 'failed', error.toString()));
   };
 
@@ -315,18 +302,15 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
       sdpMLineIndex: candidate.sdpMLineIndex
     }, null);
 
-  // Added by Leonardo Venoso - ESS-989
-  // TODO: Validate if it's right place.
-  self.stats.sendIceAgentInfo({
-    'room_id': self._initOptions.defaultRoom,
-    'user_id': self._user.uid,
-    'peer_id': self._socket.id,
-    'is_trickle': self._initOptions.enableIceTrickle,
-    'is_controlling': self.is_controlling || false,
-    'state': self._peerConnections[targetMid].iceConnectionState,
-    'local_candidate': null,
-    'remote_candidate': self._buildCandidateObjForStats(candidate)
-  });
+    self.stats.sendIceAgentInfo({
+      'room_id': self._initOptions.defaultRoom,
+      'user_id': self._user.uid,
+      'peer_id': self._socket.id,
+      'is_trickle': self._initOptions.enableIceTrickle,
+      'state': self._peerConnections[targetMid].iceConnectionState,
+      'local_candidate': null,
+      'remote_candidate': self._buildCandidateObjForStats(candidate)
+    });
 
   if (!(self._peerConnections[targetMid] &&
     self._peerConnections[targetMid].signalingState !== self.PEER_CONNECTION_STATE.CLOSED &&
@@ -342,7 +326,6 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
       sdpMLineIndex: candidate.sdpMLineIndex
     }, new Error('Failed processing ICE candidate as Peer connection does not exists or is closed.'));
 
-    // Added by Leonardo Venoso - ESS-989.
     self.stats.sendIceCandidateAndSDPInfo(self._buildCandidateSDPObjForStats(
       candidate,
       'dropped',

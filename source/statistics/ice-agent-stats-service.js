@@ -1,8 +1,6 @@
 /**
  * @constructor
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON}
  */
 function IceAgentStatsService(params) {
@@ -17,9 +15,7 @@ IceAgentStatsService.prototype.constructor = IceAgentStatsService;
  *
  * @method _buildData
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON} WebRTC ICE Agent state object.
  * @return {JSON}
  */
@@ -36,9 +32,7 @@ IceAgentStatsService.prototype._buildData = function(params) {
  *
  * @method _getEndpoint
  * @public
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @return {String} with the endpoint URL chunk. Example: client/iceconnection
  */
 IceAgentStatsService.prototype._getEndpoint = function() {

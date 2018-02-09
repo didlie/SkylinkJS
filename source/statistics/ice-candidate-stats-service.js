@@ -1,8 +1,6 @@
 /**
  * @constructor
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON}
  */
 function IceCandidateStatsService(params) {
@@ -17,9 +15,7 @@ IceCandidateStatsService.prototype.constructor = IceCandidateStatsService;
  *
  * @method _buildData
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON} WebRTC ICE candidate object.
  * @return {JSON}
  */
@@ -36,9 +32,7 @@ IceCandidateStatsService.prototype._buildData = function(params) {
  *
  * @method _getEndpoint
  * @public
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @return {String} with the endpoint URL chunk. Example: client/iceconnection
  */
 IceCandidateStatsService.prototype._getEndpoint = function() {

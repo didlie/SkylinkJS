@@ -1,8 +1,6 @@
 /**
  * @constructor
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON}
  */
 function PeerInfoStatsService(params) {
@@ -17,9 +15,7 @@ PeerInfoStatsService.prototype.constructor = PeerInfoStatsService;
  *
  * @method _buildData
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {MediaStream} WebRTC MediaStream
  * @return {JSON}
  */
@@ -39,9 +35,7 @@ PeerInfoStatsService.prototype._buildData = function(mediaStream) {
  *
  * @method _buildMediaObj
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {MediaStream} WebRTC MediaStream
  * @return {JSON}
  */
@@ -57,9 +51,7 @@ PeerInfoStatsService.prototype._buildMediaObj = function(mediaStream) {
  *
  * @method _buildSDKObj
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @return {JSON}
  */
 PeerInfoStatsService.prototype._buildSDKObj = function() {
@@ -74,9 +66,7 @@ PeerInfoStatsService.prototype._buildSDKObj = function() {
  *
  * @method _buildAgentObj
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @return {JSON}
  */
 PeerInfoStatsService.prototype._buildAgentObj = function() {
@@ -94,9 +84,7 @@ PeerInfoStatsService.prototype._buildAgentObj = function() {
  *
  * @method _buildAudioTracksObj
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {Array} WebRTC audio MediaStreamTracks
  * @return {Array}
  */
@@ -121,9 +109,7 @@ PeerInfoStatsService.prototype._buildAudioTracksObj = function(audioTracks) {
  *
  * @method _buildVideoTracksObj
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {Array} WebRTC video MediaStreamTracks
  * @return {JSON}
  */
@@ -150,9 +136,7 @@ PeerInfoStatsService.prototype._buildVideoTracksObj = function(videoTracks) {
  *
  * @method _getEndpoint
  * @public
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @return {String} with the endpoint URL chunk. Example: client/iceconnection
  */
 PeerInfoStatsService.prototype._getEndpoint = function() {

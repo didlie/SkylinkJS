@@ -1,9 +1,7 @@
 /**
  * HTTP Utils.
- *
- * @for Skylink
+ * @constructor
  * @since 0.6.x
- * @author Leonardo Venoso
  */
 function HTTP() {
     this.http = this._createXMLHttpRequest();
@@ -17,7 +15,6 @@ HTTP.prototype.constructor = HTTP;
  * @method doPost
  * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  */
 HTTP.prototype.doPost = function(url, params, successCb, errorCb) {
     this._doHttpRequest('POST', url, params, successCb, errorCb);
@@ -31,7 +28,6 @@ HTTP.prototype.doPost = function(url, params, successCb, errorCb) {
  * @private
  * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {String} method POST/GET/etc
  * @param {String} url Example: /api/stats
  * @param {JSON} params Any object to be sent in the request as parameter
@@ -51,7 +47,6 @@ HTTP.prototype._doHttpRequest = function(method, url, params, successCb, errorCb
  * @private
  * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {String} method
  * @param {String} URL
  */
@@ -67,7 +62,6 @@ HTTP.prototype._openHTTPAndSetRequestHeaders = function(method, url) {
  * @private
  * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @return {Boolean}
  */
 HTTP.prototype._createXMLHttpRequest = function() {
@@ -82,9 +76,7 @@ HTTP.prototype._createXMLHttpRequest = function() {
  *
  * @method _tryExecuteHTTPRequest
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {String} method POST/GET/etc
  * @param {JSON} Params
  */
@@ -103,9 +95,7 @@ HTTP.prototype._tryExecuteHTTPRequest = function(method, params) {
  *
  * @method _setupHTTPEvts
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {Function} Success callback
  */
 HTTP.prototype._setupHTTPEvts = function(successCb, errorCb) {
@@ -131,9 +121,7 @@ HTTP.prototype._setupHTTPEvts = function(successCb, errorCb) {
  *
  * @method _createXDomainRequest
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @return {Boolean}
  */
 HTTP.prototype._createXDomainRequest = function() {
@@ -152,9 +140,7 @@ HTTP.prototype._createXDomainRequest = function() {
  *
  * @method _isXDomainRequestSupported
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @return {Boolean}
  */
 HTTP.prototype._isXDomainRequestSupported = function() {

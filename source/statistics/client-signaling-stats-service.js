@@ -1,8 +1,6 @@
 /**
  * @constructor
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON}
  */
 function ClientSignalingStatsService(params) {
@@ -17,9 +15,7 @@ ClientSignalingStatsService.prototype.constructor = ClientSignalingStatsService;
  *
  * @method _buildClientSignalsendAuthInfoingObj
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {MediaStream} WebRTC MediaStream
  * @return {JSON}
  */
@@ -42,9 +38,7 @@ ClientSignalingStatsService.prototype._buildData = function(params) {
  *
  * @method _getEndpoint
  * @public
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @return {String} with the endpoint URL chunk. Example: client/iceconnection
  */
 ClientSignalingStatsService.prototype._getEndpoint = function() {

@@ -1896,9 +1896,6 @@ Skylink.prototype._createPeerConnection = function(targetMid, isScreenSharing, c
   };
 
   pc.oniceconnectionstatechange = function(evt) {
-    // Leonardo Venoso: when the states change, there is not candidate
-    // available for the service /stats/client/iceconnection
-    // TODO: Validate if it's right place.
     var iceConnectionState = pc.iceConnectionState;
     log.debug([targetMid, 'RTCIceConnectionState', null, 'Ice connection state changed ->'], iceConnectionState);
 

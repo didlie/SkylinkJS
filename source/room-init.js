@@ -460,15 +460,12 @@ Skylink.prototype.init = function(_options, _callback) {
   options.forceSSL = options.forceSSL !== false;
 
   // `init({ enableStats: true })`
-  // Added by Leonardo Venoso ESS-989
   options.enableStats = options.enableStats === true;
 
   // `init({ statsUrl: "https://xxx.xxx.xxx/" })`
-  // Added by Leonardo Venoso ESS-989
   options.statsUrl = options.statsUrl || options.roomServer;
 
   // `init({ enableStatsLog: "https://xxx.xxx.xxx/" })`
-  // Added by Leonardo Venoso ESS-989
   options.enableStatsLog = options.enableStatsLog === true;
 
   // `init({ socketTimeout: 20000 })`
@@ -746,7 +743,6 @@ Skylink.prototype.init = function(_options, _callback) {
 
   self._loadInfo();
 
-  // Added by Leonardo Venoso ESS-989
   console.log("*** CREATING STATS FACADE.");
   self.stats = new StatsFacade({
     enableStats: this._initOptions.enableStats,
@@ -754,7 +750,7 @@ Skylink.prototype.init = function(_options, _callback) {
     statsUrl: this._initOptions.statsUrl,
     appKeyOwner: this._appKeyOwner,
     appKey: this._initOptions.appKey,
-    selectedRoom: this._selectedRoom //remove if not needed
+    selectedRoom: this._selectedRoom
   });
 };
 
@@ -812,9 +808,6 @@ Skylink.prototype._requestServerInfo = function(method, url, callback, params) {
       var status = xhr.status || (response.success ? 200 : 400);
 
       if (response.success) {
-        // Added by Leonardo Venoso ESS-989
-        self.stats.sendAuthInfo(response);
-
       	log.debug([null, 'XMLHttpRequest', method, 'Received sessions parameters ->'], response);
       	callback(response);
       	return;
@@ -839,8 +832,6 @@ Skylink.prototype._requestServerInfo = function(method, url, callback, params) {
         return;
       }
 
-      // Added by Leonardo Venoso ESS-989;
-      self.stats.sendAuthInfo(error);
       completed = true;
       log.error([null, 'XMLHttpRequest', method, 'Failed retrieving information with status ->'], xhr.status);
 
@@ -859,7 +850,7 @@ Skylink.prototype._requestServerInfo = function(method, url, callback, params) {
       });
     };
 
-    try {
+    try {;
       xhr.open(method, url, true);
       if (params) {
         xhr.setContentType('application/json;charset=UTF-8');
@@ -912,6 +903,7 @@ Skylink.prototype._requestServerInfo = function(method, url, callback, params) {
  */
 Skylink.prototype._parseInfo = function(info) {
   log.log('Parsing parameter from server', info);
+
   if (!info.pc_constraints && !info.offer_constraints) {
     this._trigger('readyStateChange', this.READY_STATE_CHANGE.ERROR, {
       status: 200,
@@ -969,6 +961,8 @@ Skylink.prototype._parseInfo = function(info) {
   this._readyState = this.READY_STATE_CHANGE.COMPLETED;
   this._trigger('readyStateChange', this.READY_STATE_CHANGE.COMPLETED, null, this._selectedRoom);
   log.info('Parsed parameters from webserver. Ready for web-realtime communication');
+
+  this.stats.sendAuthInfo(info);
 };
 
 /**

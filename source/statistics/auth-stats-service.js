@@ -1,8 +1,6 @@
 /**
  * @constructor
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON}
  */
 function AuthStatsService(params) {
@@ -18,9 +16,7 @@ AuthStatsService.prototype.constructor = AuthStatsService;
  *
  * @method _buildData
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON} XMLHttpRequest params for success or error
  * @return {JSON}
  */
@@ -39,9 +35,7 @@ AuthStatsService.prototype._buildData = function(params) {
  *
  * @method _getEndpoint
  * @public
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @return {String} with the endpoint URL chunk. Example: client/iceconnection
  */
 AuthStatsService.prototype._getEndpoint = function() {

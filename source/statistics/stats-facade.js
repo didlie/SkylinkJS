@@ -1,8 +1,9 @@
+
 /**
+ * This is the entry point to the Statistics module.
+ *
  * @constructor
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON}
  */
 
@@ -15,6 +16,7 @@ function StatsFacade(params) {
     this.clientSignalingStatsService = new ClientSignalingStatsService(this._params);
     this.iceAgentStatsService = new IceAgentStatsService(this._params);
     this.iceCandidateStatsService = new IceCandidateStatsService(this._params);
+    this.negotiationStatsService = new NegotiationStatsService(this._params);
 };
 
 StatsFacade.prototype.constructor = StatsFacade;
@@ -27,9 +29,7 @@ StatsFacade.prototype.constructor = StatsFacade;
  *
  * @method _createClientId
  * @private
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @return {String} Client id
  */
 StatsFacade.prototype._createClientId = function() {
@@ -41,9 +41,7 @@ StatsFacade.prototype._createClientId = function() {
  *
  * @method sendPeerInfo
  * @public
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {MediaStream} WebRTC media stream.
  */
 StatsFacade.prototype.sendPeerInfo = function(mediaStream) {
@@ -55,9 +53,7 @@ StatsFacade.prototype.sendPeerInfo = function(mediaStream) {
  *
  * @method sendAuthInfo
  * @public
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON} Response from the XMLHTTPRequest for either success or error.
  */
 StatsFacade.prototype.sendAuthInfo = function(response) {
@@ -69,9 +65,7 @@ StatsFacade.prototype.sendAuthInfo = function(response) {
  *
  * @method sendClientSignalingInfo
  * @public
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON}
  */
 StatsFacade.prototype.sendClientSignalingInfo = function(params) {
@@ -83,9 +77,7 @@ StatsFacade.prototype.sendClientSignalingInfo = function(params) {
  *
  * @method sendIceAgentInfo
  * @public
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON}
  */
 StatsFacade.prototype.sendIceAgentInfo = function(params) {
@@ -97,11 +89,21 @@ StatsFacade.prototype.sendIceAgentInfo = function(params) {
  *
  * @method sendIceCandidateAndSDPInfo
  * @public
- * @for Skylink
  * @since 0.6.x
- * @author Leonardo Venoso
  * @param {JSON}
  */
 StatsFacade.prototype.sendIceCandidateAndSDPInfo = function(params) {
     this.iceAgentStatsService.send(params);
+};
+
+/**
+ * It sends negotiation information.
+ *
+ * @method sendNegotiationInfo
+ * @public
+ * @since 0.6.x
+ * @param {JSON}
+ */
+StatsFacade.prototype.sendNegotiationInfo = function(params) {
+    this.negotiationStatsService.send(params);
 };

@@ -1850,7 +1850,6 @@ Skylink.prototype._onStreamAccessSuccess = function(stream, settings, isScreenSh
   var streamHasEnded = false;
 
 
-  // Added by Leonardo Venoso ESS-989
   self.stats.sendPeerInfo(stream);
   log.log([null, 'MediaStream', streamId, 'Has access to stream ->'], stream);
 
