@@ -28,14 +28,16 @@ var HTTP = {
      * @param {Function} errorCb Function to be executed when there is an error in the request
      */
     _doHttpRequest: function(method, url, params, successCb, errorCb) {
-        this.http.onabort = this.http.onerror = function(error) {
+        var xhr = this._createXMLHttpRequest();
+
+        xhr.onabort = xhr.onerror = function(error) {
             console.log([null, 'XMLHttpRequest', 'Failed XMLHttpRequest.'], error);
 
             if(errorCb === 'function')
                 errorCb(error);
         };
 
-        this.http.onreadystatechange = function() {
+        xhr.onreadystatechange = function() {
             if (this.readyState == 4) {
                 console.log("Statistics posted.", this.responseText);
 
@@ -44,13 +46,13 @@ var HTTP = {
             }
         };
 
-        this.http.open(method, url, true);
-        this.http.setRequestHeader('Content-type', 'application/json;charset=UTF-8');
+        xhr.open(method, url, true);
+        xhr.setRequestHeader('Content-type', 'application/json;charset=UTF-8');
 
         try {
             var statistic = JSON.stringify(params);
             console.log('Sending statistics', statistic);
-            this.http.send(statistic);
+            xhr.send(statistic);
         } catch(e) {
             console.log([null, 'XMLHttpRequest', method, 'Failed XMLHttpRequest.'], e);
         }

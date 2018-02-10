@@ -744,7 +744,7 @@ Skylink.prototype.init = function(_options, _callback) {
   self._loadInfo();
 
   console.log("*** CREATING STATS FACADE.");
-  debugger;
+  // debugger;
   self.stats = new StatsFacade({
     enableStats: this._initOptions.enableStats,
     statsUrl: this._initOptions.statsUrl,
