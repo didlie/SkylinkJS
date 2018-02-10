@@ -462,7 +462,7 @@ Skylink.prototype.init = function(_options, _callback) {
   // `init({ enableStats: true })`
   options.enableStats = options.enableStats === true;
 
-  // `init({ statsUrl: "https://xxx.xxx.xxx/" })`
+  // `init({ statsUrl: "//xxx.xxx.xxx/" })`
   options.statsUrl = options.statsUrl || options.roomServer;
 
   // `init({ enableStatsLog: "https://xxx.xxx.xxx/" })`
@@ -744,13 +744,14 @@ Skylink.prototype.init = function(_options, _callback) {
   self._loadInfo();
 
   console.log("*** CREATING STATS FACADE.");
+  debugger;
   self.stats = new StatsFacade({
     enableStats: this._initOptions.enableStats,
-    enableStatsLog: this._initOptions.enableStatsLog,
     statsUrl: this._initOptions.statsUrl,
     appKeyOwner: this._appKeyOwner,
     appKey: this._initOptions.appKey,
-    selectedRoom: this._selectedRoom
+    selectedRoom: this._selectedRoom,
+    forceSSL: this._initOptions.forceSSL
   });
 };
 

@@ -9,6 +9,7 @@ function StatsBaseService(params) {
     this.statsUrl = params.statsUrl;
     this.client_id = params.client_id;
     this.enableStats = params.enableStats;
+    this.forceSSL = params.forceSSL;
 };
 
 StatsBaseService.prototype.constructor = StatsBaseService;
@@ -25,7 +26,7 @@ StatsBaseService.prototype.constructor = StatsBaseService;
  * @return {String} The url with https://xxx.xxx.xxx./api/rest/stats/client'
  */
 StatsBaseService.prototype._buildURL = function(endPoint) {
-    return this.statsUrl + '/' + this._getBaseUrl() + '/' + endPoint;
+    return (this.forceSSL) ? 'https:' : 'http:' + this.statsUrl + '/' + this._getBaseUrl() + '/' + endPoint;
 };
 
 /**
