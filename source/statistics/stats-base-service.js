@@ -9,7 +9,6 @@ function StatsBaseService(params) {
     this.statsUrl = params.statsUrl;
     this.client_id = params.client_id;
     this.enableStats = params.enableStats;
-    this.enablelogStats = params.enablelogStats;
 };
 
 StatsBaseService.prototype.constructor = StatsBaseService;
@@ -85,11 +84,9 @@ StatsBaseService.prototype.send = function(params) {
         var data = this._buildData(params);
         var endpoint =  this._getEndpoint();
 
-        if(this.enablelogStats)
-            console.log("Sending info to stats server endpoint: " + endpoint, data);
-
-        new HTTP().doPost(this._buildURL(endpoint), data);
+        HTTP.doPost(this._buildURL(endpoint), data);
     } catch(error) {
         console.log("Statistics module failed sending datas.", error);
     }
+
 };
