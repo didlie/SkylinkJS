@@ -779,7 +779,7 @@ Skylink.prototype.VERSION = '@@version';
  * @type String
  * @readOnly
  * @for Skylink
- * @since 0.6.x
+ * @since 0.6.29
  */
 Skylink.prototype.SDK_TYPE = 'JS_WEB_SDK';
 

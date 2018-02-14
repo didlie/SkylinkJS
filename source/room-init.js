@@ -462,8 +462,8 @@ Skylink.prototype.init = function(_options, _callback) {
   // `init({ enableStats: true })`
   options.enableStats = options.enableStats === true;
 
-  // `init({ statsUrl: "//xxx.xxx.xxx/" })`
-  options.statsUrl = options.statsUrl || options.roomServer;
+  // `init({ statsURL: "//xxx.xxx.xxx/" })`
+  options.statsURL = options.statsURL || options.roomServer;
 
   // `init({ enableStatsLog: "https://xxx.xxx.xxx/" })`
   options.enableStatsLog = options.enableStatsLog === true;
@@ -742,17 +742,6 @@ Skylink.prototype.init = function(_options, _callback) {
     (self._initOptions.credentials ? '&' : '?') + 'rand=' + Date.now();
 
   self._loadInfo();
-
-  console.log("*** CREATING STATS FACADE.");
-  // debugger;
-  self.stats = new StatsFacade({
-    enableStats: this._initOptions.enableStats,
-    statsUrl: this._initOptions.statsUrl,
-    appKeyOwner: this._appKeyOwner,
-    appKey: this._initOptions.appKey,
-    selectedRoom: this._selectedRoom,
-    forceSSL: this._initOptions.forceSSL
-  });
 };
 
 /**
@@ -963,7 +952,8 @@ Skylink.prototype._parseInfo = function(info) {
   this._trigger('readyStateChange', this.READY_STATE_CHANGE.COMPLETED, null, this._selectedRoom);
   log.info('Parsed parameters from webserver. Ready for web-realtime communication');
 
-  this.stats.sendAuthInfo(info);
+  this.initStatsModule();
+  this.sendAuthInfoStats(info);
 };
 
 /**
@@ -1092,6 +1082,7 @@ Skylink.prototype._initSelectedRoom = function(room, callback) {
     callback(new Error('Invalid room provided'), null);
     return;
   }
+
   var defaultRoom = self._initOptions.defaultRoom;
   var options = clone(self._initOptions);
   options.iceServer = options.iceServer ? options.iceServer.urls : null;
@@ -1105,6 +1096,7 @@ Skylink.prototype._initSelectedRoom = function(room, callback) {
     if (error) {
       callback(error, null);
     } else {
+      self.initStatsModule();
       callback(null, success);
     }
   });

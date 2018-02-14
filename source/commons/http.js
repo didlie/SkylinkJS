@@ -1,7 +1,7 @@
 /**
  * HTTP Utils.
  * @constructor
- * @since 0.6.x
+ * @since 0.6.29
  */
 var HTTP = {
 
@@ -9,7 +9,12 @@ var HTTP = {
      * It executes a post request.
      *
      * @method doPost
-     * @since 0.6.x
+     * @public
+     * @since 0.6.29
+     * @param {String} url Example: /api/stats
+     * @param {JSON} params Any object to be sent in the request as parameter
+     * @param {Function} Optional success callback function to be executed when the request succeed
+     * @param {Function} Optional error callback unction to be executed when there is an error in the request
      */
     doPost: function(url, params, successCb, errorCb) {
         this._doHttpRequest('POST', url, params, successCb, errorCb);
@@ -20,12 +25,12 @@ var HTTP = {
      *
      * @method _doHttpRequest
      * @private
-     * @since 0.6.x
+     * @since 0.6.29
      * @param {String} method POST/GET/etc
      * @param {String} url Example: /api/stats
      * @param {JSON} params Any object to be sent in the request as parameter
-     * @param {Function} successCb Function to be executed when the request succeed
-     * @param {Function} errorCb Function to be executed when there is an error in the request
+     * @param {Function} Optional success callback function to be executed when the request succeed
+     * @param {Function} Optional error callback unction to be executed when there is an error in the request
      */
     _doHttpRequest: function(method, url, params, successCb, errorCb) {
         var xhr = this._createXMLHttpRequest();
@@ -50,9 +55,9 @@ var HTTP = {
         xhr.setRequestHeader('Content-type', 'application/json;charset=UTF-8');
 
         try {
-            var statistic = JSON.stringify(params);
-            console.log('Sending statistics', statistic);
-            xhr.send(statistic);
+            var data = JSON.stringify(params);
+            console.log('Sending statistics', data);
+            xhr.send(data);
         } catch(e) {
             console.log([null, 'XMLHttpRequest', method, 'Failed XMLHttpRequest.'], e);
         }
@@ -63,7 +68,7 @@ var HTTP = {
      *
      * @method _createXMLHttpRequest
      * @private
-     * @since 0.6.x
+     * @since 0.6.29
      * @return {Boolean}
      */
     _createXMLHttpRequest: function() {
@@ -78,7 +83,7 @@ var HTTP = {
      *
      * @method _isXDomainRequestSupported
      * @private
-     * @since 0.6.x
+     * @since 0.6.29
      * @return {Boolean}
      */
     _isXDomainRequestSupported: function() {
@@ -90,7 +95,7 @@ var HTTP = {
      *
      * @method _createXDomainRequest
      * @private
-     * @since 0.6.x
+     * @since 0.6.29
      * @return {Boolean}
      */
     _createXDomainRequest: function() {

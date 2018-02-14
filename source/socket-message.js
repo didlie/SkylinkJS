@@ -980,8 +980,7 @@ Skylink.prototype._buildNegotiationInfoObj = function(state, weight, sdp, error)
 Skylink.prototype._enterHandler = function(message) {
   var self = this;
 
-  // Added by Leonardo ESS-989
-  this.stats.sendNegotiationInfo(this._buildNegotiationInfoObj('enter', message.weight));
+  this.sendNegotiationInfoStats('enter', message.weight);
 
   var targetMid = message.mid;
   var isNewPeer = false;
@@ -1292,8 +1291,7 @@ Skylink.prototype._restartHandler = function(message){
 Skylink.prototype._welcomeHandler = function(message) {
   var self = this;
 
-  // Added by Leonardo ESS-989
-  this.stats.sendNegotiationInfo(this._buildNegotiationInfoObj('welcome', message.weight));
+  this.sendNegotiationInfoStats('welcome', message.weight);
 
   var targetMid = message.mid;
   var isNewPeer = false;

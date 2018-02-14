@@ -58,6 +58,8 @@ Skylink.prototype._doOffer = function(targetMid, iceRestart) {
   var onSuccessCbFn = function(offer) {
     log.debug([targetMid, null, null, 'Created offer'], offer);
     self._setLocalAndSendMessage(targetMid, offer);
+
+    self.sendNegotiationInfoStats('local-offer', self._peerPriorityWeight, offer.sdp, offer.type);
   };
 
   var onErrorCbFn = function(error) {
