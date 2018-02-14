@@ -6,6 +6,13 @@
         "url": "https://temasys.io/"
     },
     "files": {
+        "source/commons/http.js": {
+            "name": "source/commons/http.js",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
         "source/template/header.js": {
             "name": "source/template/header.js",
             "modules": {},
@@ -161,6 +168,13 @@
             },
             "namespaces": {}
         },
+        "source/stats.js": {
+            "name": "source/stats.js",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
         "source/stream-media.js": {
             "name": "source/stream-media.js",
             "modules": {},
@@ -201,6 +215,130 @@
         }
     },
     "classitems": [
+        {
+            "file": "source/commons/http.js",
+            "line": 1,
+            "description": "HTTP Utils.",
+            "is_constructor": 1,
+            "since": "0.6.29",
+            "class": "Skylink"
+        },
+        {
+            "file": "source/commons/http.js",
+            "line": 8,
+            "description": "It executes a post request.",
+            "itemtype": "method",
+            "name": "doPost",
+            "access": "public",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "url",
+                    "description": "Example: /api/stats",
+                    "type": "String"
+                },
+                {
+                    "name": "params",
+                    "description": "Any object to be sent in the request as parameter",
+                    "type": "JSON"
+                },
+                {
+                    "name": "Optional",
+                    "description": "success callback function to be executed when the request succeed",
+                    "type": "Function"
+                },
+                {
+                    "name": "Optional",
+                    "description": "error callback unction to be executed when there is an error in the request",
+                    "type": "Function"
+                }
+            ],
+            "class": "Skylink"
+        },
+        {
+            "file": "source/commons/http.js",
+            "line": 23,
+            "description": "It executes an HTTP request call.",
+            "itemtype": "method",
+            "name": "_doHttpRequest",
+            "access": "private",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "method",
+                    "description": "POST/GET/etc",
+                    "type": "String"
+                },
+                {
+                    "name": "url",
+                    "description": "Example: /api/stats",
+                    "type": "String"
+                },
+                {
+                    "name": "params",
+                    "description": "Any object to be sent in the request as parameter",
+                    "type": "JSON"
+                },
+                {
+                    "name": "Optional",
+                    "description": "success callback function to be executed when the request succeed",
+                    "type": "Function"
+                },
+                {
+                    "name": "Optional",
+                    "description": "error callback unction to be executed when there is an error in the request",
+                    "type": "Function"
+                }
+            ],
+            "class": "Skylink"
+        },
+        {
+            "file": "source/commons/http.js",
+            "line": 66,
+            "description": "It creates the XMLHttpRequest or XDomainRequest object.",
+            "itemtype": "method",
+            "name": "_createXMLHttpRequest",
+            "access": "private",
+            "tagname": "",
+            "since": "0.6.29",
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "Skylink"
+        },
+        {
+            "file": "source/commons/http.js",
+            "line": 81,
+            "description": "It checks if XDomainRequest is supported in IE8 - 9 for CORS connection.",
+            "itemtype": "method",
+            "name": "_isXDomainRequestSupported",
+            "access": "private",
+            "tagname": "",
+            "since": "0.6.29",
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "Skylink"
+        },
+        {
+            "file": "source/commons/http.js",
+            "line": 93,
+            "description": "It creates the XDomainRequest object.",
+            "itemtype": "method",
+            "name": "_createXDomainRequest",
+            "access": "private",
+            "tagname": "",
+            "since": "0.6.29",
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "Skylink"
+        },
         {
             "file": "source/template/header.js",
             "line": 22,
@@ -1988,6 +2126,17 @@
         {
             "file": "source/constants.js",
             "line": 776,
+            "description": "Contains the current SDK Type.",
+            "itemtype": "attribute",
+            "name": "SDK_TYPE",
+            "type": "String",
+            "readonly": "",
+            "since": "0.6.29",
+            "class": "Skylink"
+        },
+        {
+            "file": "source/constants.js",
+            "line": 786,
             "description": "The list of <a href=\"#method_init\"><code>init()</code> method</a> ready states.",
             "itemtype": "attribute",
             "name": "READY_STATE_CHANGE",
@@ -2020,7 +2169,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 804,
+            "line": 814,
             "description": "The list of <a href=\"#method_init\"><code>init()</code> method</a> ready state failure codes.",
             "itemtype": "attribute",
             "name": "READY_STATE_CHANGE_ERROR",
@@ -2123,7 +2272,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 908,
+            "line": 918,
             "description": "Spoofs the REGIONAL_SERVER to prevent errors on deployed apps except the fact this no longer works.\nAutomatic regional selection has already been implemented hence REGIONAL_SERVER is no longer useful.",
             "itemtype": "attribute",
             "name": "REGIONAL_SERVER",
@@ -2136,7 +2285,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 923,
+            "line": 933,
             "description": "The list of User's priority weight schemes for <a href=\"#method_joinRoom\">\n<code>joinRoom()</code> method</a> connections.",
             "itemtype": "attribute",
             "name": "PRIORITY_WEIGHT_SCHEME",
@@ -2164,7 +2313,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 944,
+            "line": 954,
             "description": "The list of the SDK <code>console</code> API log levels.",
             "itemtype": "attribute",
             "name": "LOG_LEVEL",
@@ -2207,7 +2356,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 977,
+            "line": 987,
             "description": "The list of <a href=\"#method_joinRoom\"><code>joinRoom()</code> method</a> socket connection failure states.",
             "itemtype": "attribute",
             "name": "SOCKET_ERROR",
@@ -2245,7 +2394,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1011,
+            "line": 1021,
             "description": "The list of <a href=\"#method_joinRoom\"><code>joinRoom()</code> method</a> socket connection reconnection states.",
             "itemtype": "attribute",
             "name": "SOCKET_FALLBACK",
@@ -2283,7 +2432,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1042,
+            "line": 1052,
             "description": "<blockquote class=\"info\">\n  Note that this is used only for SDK developer purposes.<br>\n  Current version: <code>0.1.4</code>\n</blockquote>\nThe value of the current version of the Signaling socket message protocol.",
             "itemtype": "attribute",
             "name": "SM_PROTOCOL_VERSION",
@@ -2293,7 +2442,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1055,
+            "line": 1065,
             "description": "<blockquote class=\"info\">\n  Note that if the video codec is not supported, the SDK will not configure the local <code>\"offer\"</code> or\n  <code>\"answer\"</code> session description to prefer the codec.\n</blockquote>\nThe list of available video codecs to set as the preferred video codec to use to encode\nsending video data when available encoded video codec for Peer connections\nconfigured in the <a href=\"#method_init\"><code>init()</code> method</a>.",
             "itemtype": "attribute",
             "name": "VIDEO_CODEC",
@@ -2326,7 +2475,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1086,
+            "line": 1096,
             "description": "<blockquote class=\"info\">\n  Note that if the audio codec is not supported, the SDK will not configure the local <code>\"offer\"</code> or\n  <code>\"answer\"</code> session description to prefer the codec.\n</blockquote>\nThe list of available audio codecs to set as the preferred audio codec to use to encode\nsending audio data when available encoded audio codec for Peer connections\nconfigured in the <a href=\"#method_init\"><code>init()</code> method</a>.",
             "itemtype": "attribute",
             "name": "AUDIO_CODEC",
@@ -2374,7 +2523,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1126,
+            "line": 1136,
             "description": "The list of available screensharing media sources configured in the\n<a href=\"#method_shareScreen\"><code>shareScreen()</code> method</a>.",
             "itemtype": "attribute",
             "name": "MEDIA_SOURCE",
@@ -2422,7 +2571,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1166,
+            "line": 1176,
             "description": "<blockquote class=\"info\">\n  Note that currently <a href=\"#method_getUserMedia\"><code>getUserMedia()</code> method</a> only configures\n  the maximum resolution of the Stream due to browser interopability and support.\n</blockquote>\nThe list of <a href=\"https://en.wikipedia.org/wiki/Graphics_display_resolution#Video_Graphics_Array\">\nvideo resolutions</a> sets configured in the <a href=\"#method_getUserMedia\"><code>getUserMedia()</code> method</a>.",
             "itemtype": "attribute",
             "name": "VIDEO_RESOLUTION",
@@ -2535,7 +2684,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1279,
+            "line": 1289,
             "description": "The list of <a href=\"#method_getUserMedia\"><code>getUserMedia()</code> method</a> or\n<a href=\"#method_shareScreen\"><code>shareScreen()</code> method</a> Stream fallback states.",
             "itemtype": "attribute",
             "name": "MEDIA_ACCESS_FALLBACK_STATE",
@@ -2562,7 +2711,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1304,
+            "line": 1314,
             "description": "The list of recording states.",
             "itemtype": "attribute",
             "name": "RECORDING_STATE",
@@ -2595,7 +2744,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1330,
+            "line": 1340,
             "description": "Stores the data chunk size for Blob transfers.",
             "itemtype": "attribute",
             "name": "_CHUNK_FILE_SIZE",
@@ -2608,7 +2757,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1341,
+            "line": 1351,
             "description": "Stores the data chunk size for Blob transfers transferring from/to\n  Firefox browsers due to limitation tested in the past in some PCs (linx predominatly).",
             "itemtype": "attribute",
             "name": "_MOZ_CHUNK_FILE_SIZE",
@@ -2621,7 +2770,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1353,
+            "line": 1363,
             "description": "Stores the data chunk size for binary Blob transfers.",
             "itemtype": "attribute",
             "name": "_BINARY_FILE_SIZE",
@@ -2634,7 +2783,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1364,
+            "line": 1374,
             "description": "Stores the data chunk size for binary Blob transfers.",
             "itemtype": "attribute",
             "name": "_MOZ_BINARY_FILE_SIZE",
@@ -2647,7 +2796,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1375,
+            "line": 1385,
             "description": "Stores the data chunk size for data URI string transfers.",
             "itemtype": "attribute",
             "name": "_CHUNK_DATAURL_SIZE",
@@ -2660,7 +2809,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1386,
+            "line": 1396,
             "description": "Stores the list of data transfer protocols.",
             "itemtype": "attribute",
             "name": "_DC_PROTOCOL_TYPE",
@@ -2700,7 +2849,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1410,
+            "line": 1420,
             "description": "Stores the list of socket messaging protocol types.\nSee confluence docs for the list based on the current <code>SM_PROTOCOL_VERSION</code>.",
             "itemtype": "attribute",
             "name": "_SIG_MESSAGE_TYPE",
@@ -2713,7 +2862,7 @@
         },
         {
             "file": "source/constants.js",
-            "line": 1450,
+            "line": 1460,
             "description": "Stores the list of socket messaging protocol types to queue when sent less than a second interval.",
             "itemtype": "attribute",
             "name": "_GROUP_MESSAGE_LIST",
@@ -3392,7 +3541,61 @@
         },
         {
             "file": "source/ice-candidate.js",
-            "line": 128,
+            "line": 141,
+            "description": "It builds the candidate and SDP object for stats.",
+            "itemtype": "method",
+            "name": "_buildCandidateSDPObjForStats",
+            "access": "private",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "RTCIceCandidate"
+                },
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "VENOSO",
+                "type": "JSON"
+            },
+            "class": "Skylink"
+        },
+        {
+            "file": "source/ice-candidate.js",
+            "line": 166,
+            "description": "It builds the candidate object for stats.",
+            "itemtype": "method",
+            "name": "_buildCandidateObjForStats",
+            "access": "private",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "RTCIceCandidate"
+                }
+            ],
+            "return": {
+                "description": "VENOSO",
+                "type": "JSON"
+            },
+            "class": "Skylink"
+        },
+        {
+            "file": "source/ice-candidate.js",
+            "line": 187,
             "description": "Function that buffers the Peer connection ICE candidate when received\n  before remote session description is received and set.",
             "itemtype": "method",
             "name": "_addIceCandidateToQueue",
@@ -3403,7 +3606,7 @@
         },
         {
             "file": "source/ice-candidate.js",
-            "line": 152,
+            "line": 213,
             "description": "Function that adds all the Peer connection buffered ICE candidates received.\nThis should be called only after the remote session description is received and set.",
             "itemtype": "method",
             "name": "_addIceCandidateFromQueue",
@@ -3414,7 +3617,7 @@
         },
         {
             "file": "source/ice-candidate.js",
-            "line": 189,
+            "line": 250,
             "description": "Function that adds the ICE candidate to Peer connection.",
             "itemtype": "method",
             "name": "_addIceCandidate",
@@ -3715,7 +3918,7 @@
         },
         {
             "file": "source/peer-connection.js",
-            "line": 2031,
+            "line": 2035,
             "description": "Function that handles the <code>_restartPeerConnection</code> scenario\n  for MCU enabled Peer connections.\nThis is implemented currently by making the user leave and join the Room again.\nThe Peer ID will not stay the same though.",
             "itemtype": "method",
             "name": "_restartMCUConnection",
@@ -3726,7 +3929,7 @@
         },
         {
             "file": "source/peer-connection.js",
-            "line": 2179,
+            "line": 2183,
             "description": "Function that handles the stats tabulation.",
             "itemtype": "method",
             "name": "_parseConnectionStats",
@@ -3737,7 +3940,7 @@
         },
         {
             "file": "source/peer-connection.js",
-            "line": 2199,
+            "line": 2203,
             "description": "Function that signals the end-of-candidates flag.",
             "itemtype": "method",
             "name": "_signalingEndOfCandidates",
@@ -3945,7 +4148,7 @@
         },
         {
             "file": "source/peer-handshake.js",
-            "line": 78,
+            "line": 80,
             "description": "Function that creates the Peer connection answer session description.\nThis comes after receiving and setting the offer session description.",
             "itemtype": "method",
             "name": "_doAnswer",
@@ -3956,7 +4159,7 @@
         },
         {
             "file": "source/peer-handshake.js",
-            "line": 139,
+            "line": 141,
             "description": "Function that sets the local session description and sends to Peer.\nIf trickle ICE is disabled, the local session description will be sent after\n  ICE gathering has been completed.",
             "itemtype": "method",
             "name": "_setLocalAndSendMessage",
@@ -5130,7 +5333,7 @@
         },
         {
             "file": "source/room-init.js",
-            "line": 738,
+            "line": 747,
             "description": "Function that checks if value is contained in a SDK constant.",
             "itemtype": "method",
             "name": "_containsInList",
@@ -5139,7 +5342,7 @@
         },
         {
             "file": "source/room-init.js",
-            "line": 756,
+            "line": 765,
             "description": "Starts retrieving Room credentials information from API server.",
             "itemtype": "method",
             "name": "_requestServerInfo",
@@ -5150,7 +5353,7 @@
         },
         {
             "file": "source/room-init.js",
-            "line": 877,
+            "line": 887,
             "description": "Parses the Room credentials information retrieved from API server.",
             "itemtype": "method",
             "name": "_parseInfo",
@@ -5161,7 +5364,7 @@
         },
         {
             "file": "source/room-init.js",
-            "line": 945,
+            "line": 959,
             "description": "Loads and checks the dependencies if they are loaded correctly.",
             "itemtype": "method",
             "name": "_loadInfo",
@@ -5172,7 +5375,7 @@
         },
         {
             "file": "source/room-init.js",
-            "line": 1057,
+            "line": 1071,
             "description": "Starts initialising for Room credentials for room name provided in <code>joinRoom()</code> method.",
             "itemtype": "method",
             "name": "_initSelectedRoom",
@@ -8714,7 +8917,7 @@
         },
         {
             "file": "source/socket-channel.js",
-            "line": 388,
+            "line": 399,
             "description": "Function that starts the socket connection to the Signaling.\nThis starts creating the socket connection and called at first not when requiring to fallback.",
             "itemtype": "method",
             "name": "_openChannel",
@@ -8725,7 +8928,7 @@
         },
         {
             "file": "source/socket-channel.js",
-            "line": 432,
+            "line": 443,
             "description": "Function that stops the socket connection to the Signaling.",
             "itemtype": "method",
             "name": "_closeChannel",
@@ -9067,7 +9270,7 @@
         },
         {
             "file": "source/socket-message.js",
-            "line": 958,
+            "line": 971,
             "description": "Function that handles the \"enter\" socket message received.\nSee confluence docs for the \"enter\" expected properties to be received\n  based on the current <code>SM_PROTOCOL_VERSION</code>.",
             "itemtype": "method",
             "name": "_enterHandler",
@@ -9078,7 +9281,7 @@
         },
         {
             "file": "source/socket-message.js",
-            "line": 1119,
+            "line": 1135,
             "description": "Function that handles the \"restart\" socket message received.\nSee confluence docs for the \"restart\" expected properties to be received\n  based on the current <code>SM_PROTOCOL_VERSION</code>.",
             "itemtype": "method",
             "name": "_restartHandler",
@@ -9089,7 +9292,7 @@
         },
         {
             "file": "source/socket-message.js",
-            "line": 1260,
+            "line": 1282,
             "description": "Function that handles the \"welcome\" socket message received.\nSee confluence docs for the \"welcome\" expected properties to be received\n  based on the current <code>SM_PROTOCOL_VERSION</code>.",
             "itemtype": "method",
             "name": "_welcomeHandler",
@@ -9100,7 +9303,7 @@
         },
         {
             "file": "source/socket-message.js",
-            "line": 1438,
+            "line": 1463,
             "description": "Function that handles the \"offer\" socket message received.\nSee confluence docs for the \"offer\" expected properties to be received\n  based on the current <code>SM_PROTOCOL_VERSION</code>.",
             "itemtype": "method",
             "name": "_offerHandler",
@@ -9111,7 +9314,7 @@
         },
         {
             "file": "source/socket-message.js",
-            "line": 1546,
+            "line": 1571,
             "description": "Function that handles the \"candidate\" socket message received.\nSee confluence docs for the \"candidate\" expected properties to be received\n  based on the current <code>SM_PROTOCOL_VERSION</code>.",
             "itemtype": "method",
             "name": "_candidateHandler",
@@ -9122,7 +9325,7 @@
         },
         {
             "file": "source/socket-message.js",
-            "line": 1641,
+            "line": 1666,
             "description": "Function that handles the \"answer\" socket message received.\nSee confluence docs for the \"answer\" expected properties to be received\n  based on the current <code>SM_PROTOCOL_VERSION</code>.",
             "itemtype": "method",
             "name": "_answerHandler",
@@ -9133,13 +9336,257 @@
         },
         {
             "file": "source/socket-message.js",
-            "line": 1766,
+            "line": 1791,
             "description": "Function that compares the SM / DT protocol versions to see if it in the version.",
             "itemtype": "method",
             "name": "_isLowerThanVersion",
             "access": "private",
             "tagname": "",
             "since": "0.6.16",
+            "class": "Skylink"
+        },
+        {
+            "file": "source/stats.js",
+            "line": 1,
+            "description": "Stats endpoints URL chunks.",
+            "class": "Skylink"
+        },
+        {
+            "file": "source/stats.js",
+            "line": 16,
+            "description": "It builds a URL concatenating statsURL, which was set at the configuration file, plus BASE_URL\nand the correspoiding endpoint.",
+            "itemtype": "method",
+            "name": "_buildStatsURL",
+            "access": "private",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "endPoint",
+                    "description": "Example: /api/stats",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "The url with https://xxx.xxx.xxx./api/rest/stats/client'",
+                "type": "String"
+            },
+            "class": "Skylink"
+        },
+        {
+            "file": "source/stats.js",
+            "line": 30,
+            "description": "It builds the data for the given params.\nIt fetches the endpoint from the concrete classes.\nIt sends the information to the stats server.",
+            "access": "private",
+            "tagname": "",
+            "itemtype": "method",
+            "name": "_sendStatsInfo",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "Service",
+                    "description": "endpoint chunk URL E.g. client/signaling.",
+                    "type": "String"
+                },
+                {
+                    "name": "Any",
+                    "description": "data that wants to be sent to the stats server. It will be\nStringified in the HTTP service class.",
+                    "type": "JSON"
+                }
+            ],
+            "class": "Skylink"
+        },
+        {
+            "file": "source/stats.js",
+            "line": 53,
+            "description": "It creates the client id concatenating (this.appKeyOwner || 'dummy') _ + Date.now() + a random number.\nThe why of the dummy data is because the skilink.init() is executed twice. During the first\nexecution it does not retrive the apiKeyOwner; however, in the second execution it retrieves\nthe API owner.",
+            "itemtype": "method",
+            "name": "_createClientIDStats",
+            "access": "private",
+            "tagname": "",
+            "since": "0.6.29",
+            "return": {
+                "description": "Client id",
+                "type": "String"
+            },
+            "class": "Skylink"
+        },
+        {
+            "file": "source/stats.js",
+            "line": 68,
+            "description": "It initializes the Stats module.\nIt creates a client_id.\nThis function has to be called when the room inits. During the second call Skylink will get\nthe appKeyOwner. In the first call the client_id will be a 'dummy' one.",
+            "itemtype": "method",
+            "name": "initStatsModule",
+            "access": "public",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "Response",
+                    "description": "from the XMLHTTPRequest for either success or error.",
+                    "type": "JSON"
+                }
+            ],
+            "class": "Skylink"
+        },
+        {
+            "file": "source/stats.js",
+            "line": 83,
+            "description": "It sends the authentication stats information.",
+            "itemtype": "method",
+            "name": "sendAuthInfoStats",
+            "access": "public",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "Response",
+                    "description": "from the XMLHTTPRequest for either success or error.",
+                    "type": "JSON"
+                }
+            ],
+            "class": "Skylink"
+        },
+        {
+            "file": "source/stats.js",
+            "line": 104,
+            "description": "It sends the client signalling stats information.",
+            "itemtype": "method",
+            "name": "sendClientSignalingInfoStats",
+            "access": "public",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "class": "Skylink"
+        },
+        {
+            "file": "source/stats.js",
+            "line": 130,
+            "description": "It sends the peer stats information.",
+            "itemtype": "method",
+            "name": "sendPeerInfoStats",
+            "access": "public",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "WebRTC",
+                    "description": "media stream.",
+                    "type": "MediaStream"
+                }
+            ],
+            "class": "Skylink"
+        },
+        {
+            "file": "source/stats.js",
+            "line": 192,
+            "description": "It sends ICE Agent state information.\nIt gather the peerConnection.getStats() and the change of state\nin the method.",
+            "itemtype": "method",
+            "name": "sendIceAgentInfo",
+            "access": "public",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "{",
+                    "description": "statsPromise: WebRTCStats, state: String }",
+                    "type": "JSON"
+                }
+            ],
+            "class": "Skylink"
+        },
+        {
+            "file": "source/stats.js",
+            "line": 252,
+            "description": "It builds the candidate informationb object.",
+            "itemtype": "method",
+            "name": "_buildCandidateInfoForIceAgentState",
+            "access": "private",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "RTCCandidate"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "JSON"
+            },
+            "class": "Skylink"
+        },
+        {
+            "file": "source/stats.js",
+            "line": 273,
+            "description": "It sends the peer stats information.",
+            "itemtype": "method",
+            "name": "sendIceCandidateAndSDPInfoStats",
+            "access": "public",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "RTCIceCandidate"
+                },
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "class": "Skylink"
+        },
+        {
+            "file": "source/stats.js",
+            "line": 303,
+            "description": "It sends peer negotiation status information.",
+            "itemtype": "method",
+            "name": "sendNegotiationInfoStats",
+            "access": "public",
+            "tagname": "",
+            "since": "0.6.29",
+            "params": [
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "UNKNOWN",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
             "class": "Skylink"
         },
         {
@@ -9747,7 +10194,7 @@
         },
         {
             "file": "source/stream-media.js",
-            "line": 1986,
+            "line": 1988,
             "description": "Function that handles the native <code>navigator.getUserMedia()</code> API failure callback result.",
             "itemtype": "method",
             "name": "_onStreamAccessError",
@@ -9758,7 +10205,7 @@
         },
         {
             "file": "source/stream-media.js",
-            "line": 2027,
+            "line": 2029,
             "description": "Function that handles the <code>RTCPeerConnection.onaddstream</code> remote MediaStream received.",
             "itemtype": "method",
             "name": "_onRemoteStreamAdded",
@@ -9769,7 +10216,7 @@
         },
         {
             "file": "source/stream-media.js",
-            "line": 2061,
+            "line": 2063,
             "description": "Function that sets User's Stream to send to Peer connection.\nPriority for <code>shareScreen()</code> Stream over <code>getUserMedia()</code> Stream.",
             "itemtype": "method",
             "name": "_addLocalMediaStreams",
@@ -9780,7 +10227,7 @@
         },
         {
             "file": "source/stream-media.js",
-            "line": 2156,
+            "line": 2158,
             "description": "Function that handles ended streams.",
             "itemtype": "method",
             "name": "_handleEndedStreams",
@@ -10030,6 +10477,22 @@
             "line": " source/data-transfer.js:1387"
         },
         {
+            "message": "param name missing: {RTCIceCandidate}",
+            "line": " source/ice-candidate.js:141"
+        },
+        {
+            "message": "param name missing: {String}",
+            "line": " source/ice-candidate.js:141"
+        },
+        {
+            "message": "param name missing: {String}",
+            "line": " source/ice-candidate.js:141"
+        },
+        {
+            "message": "param name missing: {RTCIceCandidate}",
+            "line": " source/ice-candidate.js:166"
+        },
+        {
             "message": "unknown tag: trigger",
             "line": " source/peer-connection.js:1"
         },
@@ -10146,6 +10609,46 @@
             "line": " source/socket-message.js:187"
         },
         {
+            "message": "param name missing: {String}",
+            "line": " source/stats.js:104"
+        },
+        {
+            "message": "param name missing: {RTCCandidate}",
+            "line": " source/stats.js:252"
+        },
+        {
+            "message": "param name missing: {RTCIceCandidate}",
+            "line": " source/stats.js:273"
+        },
+        {
+            "message": "param name missing: {String}",
+            "line": " source/stats.js:273"
+        },
+        {
+            "message": "param name missing: {String}",
+            "line": " source/stats.js:273"
+        },
+        {
+            "message": "param name missing: {String}",
+            "line": " source/stats.js:303"
+        },
+        {
+            "message": "param name missing: {String}",
+            "line": " source/stats.js:303"
+        },
+        {
+            "message": "param name missing: {String}",
+            "line": " source/stats.js:303"
+        },
+        {
+            "message": "param name missing: {String}",
+            "line": " source/stats.js:303"
+        },
+        {
+            "message": "param name missing: {String}",
+            "line": " source/stats.js:303"
+        },
+        {
             "message": "unknown tag: trigger",
             "line": " source/stream-media.js:1"
         },
@@ -10184,6 +10687,10 @@
         {
             "message": "unknown tag: trigger",
             "line": " source/stream-media.js:1284"
+        },
+        {
+            "message": "Missing item type\nHTTP Utils.",
+            "line": " source/commons/http.js:1"
         },
         {
             "message": "Missing item type\nGlobal function that clones an object.",
@@ -10228,6 +10735,10 @@
         {
             "message": "Missing item type\nEmit event for Peers function.",
             "line": " source/data-transfer.js:2783"
+        },
+        {
+            "message": "Missing item type\nStats endpoints URL chunks.",
+            "line": " source/stats.js:1"
         }
     ]
 }

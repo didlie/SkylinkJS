@@ -123,6 +123,10 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
     if (candidateType === &#x27;endOfCandidates&#x27; || !(self._peerConnections[targetMid] &amp;&amp;
       self._peerConnections[targetMid].localDescription &amp;&amp; self._peerConnections[targetMid].localDescription.sdp &amp;&amp;
       self._peerConnections[targetMid].localDescription.sdp.indexOf(&#x27;\r\na=mid:&#x27; + candidate.sdpMid + &#x27;\r\n&#x27;) &gt; -1)) {
+
+      var errorMsg = &#x27;End-of-candidates signal or unused ICE candidates to prevent errors.&#x27;;
+      self.sendIceCandidateAndSDPInfoStats(candidate, null, errorMsg);
+
       log.warn([targetMid, &#x27;RTCIceCandidate&#x27;, candidateType, &#x27;Dropping of sending ICE candidate &#x27; +
         &#x27;end-of-candidates signal or unused ICE candidates to prevent errors -&gt;&#x27;], candidate);
       return;
@@ -130,6 +134,10 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
 
     if (self._initOptions.filterCandidatesType[candidateType]) {
       if (!(self._hasMCU &amp;&amp; self._initOptions.forceTURN)) {
+
+        var errorMsg = &#x27;Dropping of sending ICE candidate as it matches ICE candidate filtering flag.&#x27;;
+        self.sendIceCandidateAndSDPInfoStats(candidate, null, errorMsg);
+
         log.warn([targetMid, &#x27;RTCIceCandidate&#x27;, candidateType, &#x27;Dropping of sending ICE candidate as &#x27; +
           &#x27;it matches ICE candidate filtering flag -&gt;&#x27;], candidate);
         return;
@@ -154,12 +162,17 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
     });
 
     if (!self._initOptions.enableIceTrickle) {
+      var errorMsg = &#x27;Dropping of sending ICE candidate as it matches ICE candidate filtering flag.&#x27;;
+      self.sendIceCandidateAndSDPInfoStats(candidate, null, errorMsg);
+
       log.warn([targetMid, &#x27;RTCIceCandidate&#x27;, candidateType, &#x27;Dropping of sending ICE candidate as &#x27; +
         &#x27;trickle ICE is disabled -&gt;&#x27;], candidate);
       return;
     }
 
     log.debug([targetMid, &#x27;RTCIceCandidate&#x27;, candidateType, &#x27;Sending ICE candidate -&gt;&#x27;], candidate);
+
+    self.sendIceCandidateAndSDPInfoStats(candidate, null, null);
 
     self._sendChannelMessage({
       type: self._SIG_MESSAGE_TYPE.CANDIDATE,
@@ -217,6 +230,52 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
 };
 
 /**
+ * It builds the candidate and SDP object for stats.
+ *
+ * @method _buildCandidateSDPObjForStats
+ * @private
+ * @since 0.6.29
+ * @param {RTCIceCandidate}
+ * @param {String}
+ * @param {String}
+ * @return {JSON}
+ * VENOSO
+ */
+Skylink.prototype._buildCandidateSDPObjForStats = function(candidate, state, errorMsg) {
+  return {
+    &#x27;room_id&#x27;: this._selectedRoom,
+    &#x27;user_id&#x27;: this._user.uid,
+    &#x27;candidate_id&#x27;: candidate.type + &#x27;_&#x27; + (new Date()).getTime(),
+    &#x27;state&#x27;: state,
+    &#x27;sdpMid&#x27;: candidate.sdpMid,
+    &#x27;sdpMLineIndex&#x27;: candidate.sdpMLineIndex,
+    &#x27;candidate&#x27;: JSON.stringify(candidate),
+    &#x27;error&#x27;: errorMsg || null
+  };
+};
+
+/**
+ * It builds the candidate object for stats.
+ *
+ * @method _buildCandidateObjForStats
+ * @private
+ * @since 0.6.29
+ * @param {RTCIceCandidate}
+ * @return {JSON}
+ * VENOSO
+ */
+Skylink.prototype._buildCandidateObjForStats = function(candidate) {
+  return {
+    &#x27;address&#x27;: candidate.ip,
+    &#x27;port&#x27;: candidate.port,
+    &#x27;candidateType&#x27;: candidate.type,
+    &#x27;network_type&#x27;: candidate.network_type || null,
+    &#x27;transport&#x27;: candidate.protocol,
+    &#x27;priority&#x27;: candidate.priority
+  };
+};
+
+/**
  * Function that buffers the Peer connection ICE candidate when received
  *   before remote session description is received and set.
  * @method _addIceCandidateToQueue
@@ -238,6 +297,8 @@ Skylink.prototype._addIceCandidateToQueue = function(targetMid, canId, candidate
 
   this._peerCandidatesQueue[targetMid] = this._peerCandidatesQueue[targetMid] || [];
   this._peerCandidatesQueue[targetMid].push([canId, candidate]);
+
+  this.sendIceCandidateAndSDPInfoStats(candidate, &#x27;buffered&#x27;, null);
 };
 
 /**
@@ -291,12 +352,15 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
   var onSuccessCbFn = function () {
     log.log([targetMid, &#x27;RTCIceCandidate&#x27;, canId + &#x27;:&#x27; + candidateType,
       &#x27;Added ICE candidate successfully.&#x27;]);
+
     self._trigger(&#x27;candidateProcessingState&#x27;, self.CANDIDATE_PROCESSING_STATE.PROCESS_SUCCESS,
       targetMid, canId, candidateType, {
       candidate: candidate.candidate,
       sdpMid: candidate.sdpMid,
       sdpMLineIndex: candidate.sdpMLineIndex
     }, null);
+
+    self.sendIceCandidateAndSDPInfoStats(candidate, &#x27;success&#x27;, null);
   };
 
   var onErrorCbFn = function (error) {
@@ -308,6 +372,8 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
       sdpMid: candidate.sdpMid,
       sdpMLineIndex: candidate.sdpMLineIndex
     }, error);
+
+    self.sendIceCandidateAndSDPInfoStats(candidate, &#x27;failed&#x27;, error.toString());
   };
 
   log.debug([targetMid, &#x27;RTCIceCandidate&#x27;, canId + &#x27;:&#x27; + candidateType, &#x27;Adding ICE candidate.&#x27;]);
@@ -332,6 +398,12 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
       sdpMid: candidate.sdpMid,
       sdpMLineIndex: candidate.sdpMLineIndex
     }, new Error(&#x27;Failed processing ICE candidate as Peer connection does not exists or is closed.&#x27;));
+
+    self.sendIceCandidateAndSDPInfoStat(
+      candidate,
+      &#x27;dropped&#x27;,
+      &#x27;Failed processing ICE candidate as Peer connection does not exists or is closed.&#x27;);
+
     return;
   }
 

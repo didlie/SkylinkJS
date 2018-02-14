@@ -1046,6 +1046,19 @@ Skylink.prototype._inRoomHandler = function(message) {
   self._sendChannelMessage(enterMsg);
 };
 
+Skylink.prototype._buildNegotiationInfoObj = function(state, weight, sdp, error) {
+  return {
+    &#x27;room_id&#x27;: this._selectedRoom,
+    &#x27;user_id&#x27;: this._user.uid,
+    &#x27;peer_id&#x27;: this._socket.id,
+    &#x27;state&#x27;: state,
+    &#x27;error&#x27;: error || null,
+    &#x27;weight&#x27;: weight,
+    &#x27;sdp_type&#x27;: sdp ? sdp.type : null,
+    &#x27;sdp_sdp&#x27;: sdp ? sdp.sdp : null
+  };
+};
+
 /**
  * Function that handles the &quot;enter&quot; socket message received.
  * See confluence docs for the &quot;enter&quot; expected properties to be received
@@ -1057,6 +1070,9 @@ Skylink.prototype._inRoomHandler = function(message) {
  */
 Skylink.prototype._enterHandler = function(message) {
   var self = this;
+
+  this.sendNegotiationInfoStats(&#x27;enter&#x27;, message.weight);
+
   var targetMid = message.mid;
   var isNewPeer = false;
   var userInfo = message.userInfo || {};
@@ -1220,6 +1236,8 @@ Skylink.prototype._restartHandler = function(message){
   var self = this;
   var targetMid = message.mid;
   var userInfo = message.userInfo || {};
+
+
   userInfo.settings = userInfo.settings || {};
   userInfo.mediaStatus = userInfo.mediaStatus || {};
   userInfo.config = {
@@ -1230,6 +1248,8 @@ Skylink.prototype._restartHandler = function(message){
     receiveOnly: message.receiveOnly === true,
     publishOnly: !!message.publishOnly
   };
+
+  debugger;
   userInfo.parentId = message.parentId || null;
   userInfo.agent = {
     name: typeof message.agent === &#x27;string&#x27; &amp;&amp; message.agent ? message.agent : &#x27;other&#x27;,
@@ -1258,6 +1278,7 @@ Skylink.prototype._restartHandler = function(message){
       message.DTProtocolVersion : (self._hasMCU || targetMid === &#x27;MCU&#x27; ? &#x27;0.1.2&#x27; : &#x27;0.1.0&#x27;)
   };
 
+  debugger;
   log.log([targetMid, &#x27;RTCPeerConnection&#x27;, null, &#x27;Peer &quot;restart&quot; received -&gt;&#x27;], message);
 
   if (!self._peerInformations[targetMid]) {
@@ -1269,6 +1290,7 @@ Skylink.prototype._restartHandler = function(message){
   //          : User is parent and parentId is defined and matches
   //          : User is child and parent matches
   // Don&#x27;t if : Is MCU
+  debugger;
   if (targetMid !== &#x27;MCU&#x27; &amp;&amp; ((self._parentId &amp;&amp; self._parentId === targetMid) ||
     (self._hasMCU &amp;&amp; self._publishOnly) || (message.parentId &amp;&amp; self._user &amp;&amp; self._user.sid &amp;&amp;
     message.parentId === self._user.sid))) {
@@ -1359,6 +1381,9 @@ Skylink.prototype._restartHandler = function(message){
  */
 Skylink.prototype._welcomeHandler = function(message) {
   var self = this;
+
+  this.sendNegotiationInfoStats(&#x27;welcome&#x27;, message.weight);
+
   var targetMid = message.mid;
   var isNewPeer = false;
   var userInfo = message.userInfo || {};

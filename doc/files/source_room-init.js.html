@@ -550,6 +550,15 @@ Skylink.prototype.init = function(_options, _callback) {
   // &#x60;init({ forceSSL: true })&#x60;
   options.forceSSL = options.forceSSL !== false;
 
+  // &#x60;init({ enableStats: true })&#x60;
+  options.enableStats = options.enableStats === true;
+
+  // &#x60;init({ statsURL: &quot;//xxx.xxx.xxx/&quot; })&#x60;
+  options.statsURL = options.statsURL || options.roomServer;
+
+  // &#x60;init({ enableStatsLog: &quot;https://xxx.xxx.xxx/&quot; })&#x60;
+  options.enableStatsLog = options.enableStatsLog === true;
+
   // &#x60;init({ socketTimeout: 20000 })&#x60;
   options.socketTimeout = typeof options.socketTimeout === &#x27;number&#x27; &amp;&amp; options.socketTimeout &gt;= 5000 ? options.socketTimeout : 7000;
 
@@ -903,6 +912,7 @@ Skylink.prototype._requestServerInfo = function(method, url, callback, params) {
       if (completed) {
         return;
       }
+
       completed = true;
       log.error([null, &#x27;XMLHttpRequest&#x27;, method, &#x27;Failed retrieving information with status -&gt;&#x27;], xhr.status);
 
@@ -921,7 +931,7 @@ Skylink.prototype._requestServerInfo = function(method, url, callback, params) {
       });
     };
 
-    try {
+    try {;
       xhr.open(method, url, true);
       if (params) {
         xhr.setContentType(&#x27;application/json;charset=UTF-8&#x27;);
@@ -974,6 +984,7 @@ Skylink.prototype._requestServerInfo = function(method, url, callback, params) {
  */
 Skylink.prototype._parseInfo = function(info) {
   log.log(&#x27;Parsing parameter from server&#x27;, info);
+
   if (!info.pc_constraints &amp;&amp; !info.offer_constraints) {
     this._trigger(&#x27;readyStateChange&#x27;, this.READY_STATE_CHANGE.ERROR, {
       status: 200,
@@ -1031,6 +1042,9 @@ Skylink.prototype._parseInfo = function(info) {
   this._readyState = this.READY_STATE_CHANGE.COMPLETED;
   this._trigger(&#x27;readyStateChange&#x27;, this.READY_STATE_CHANGE.COMPLETED, null, this._selectedRoom);
   log.info(&#x27;Parsed parameters from webserver. Ready for web-realtime communication&#x27;);
+
+  this.initStatsModule();
+  this.sendAuthInfoStats(info);
 };
 
 /**
@@ -1159,6 +1173,7 @@ Skylink.prototype._initSelectedRoom = function(room, callback) {
     callback(new Error(&#x27;Invalid room provided&#x27;), null);
     return;
   }
+
   var defaultRoom = self._initOptions.defaultRoom;
   var options = clone(self._initOptions);
   options.iceServer = options.iceServer ? options.iceServer.urls : null;
@@ -1172,6 +1187,7 @@ Skylink.prototype._initSelectedRoom = function(room, callback) {
     if (error) {
       callback(error, null);
     } else {
+      self.initStatsModule();
       callback(null, success);
     }
   });

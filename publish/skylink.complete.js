@@ -1,4 +1,4 @@
-/*! skylinkjs - v0.6.28 - Wed Jan 24 2018 17:40:48 GMT+0800 (+08) */
+/*! skylinkjs - v0.6.28 - Wed Feb 14 2018 18:29:36 GMT+0800 (+08) */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.io = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 
@@ -13688,7 +13688,7 @@ if (typeof window.require !== 'function') {
   AdapterJS._defineMediaSourcePolyfill();
 }
 
-/*! skylinkjs - v0.6.28 - Wed Jan 24 2018 17:40:48 GMT+0800 (+08) */
+/*! skylinkjs - v0.6.28 - Wed Feb 14 2018 18:29:36 GMT+0800 (+08) */
 
 (function(globals) {
 
@@ -14550,6 +14550,114 @@ function Skylink() {
   this._initOptions = {};
   
 }
+var HTTP = {
+
+    /**
+     * It executes a post request.
+     *
+     * @method doPost
+     * @public
+     * @since 0.6.29
+     * @param {String} url Example: /api/stats
+     * @param {JSON} params Any object to be sent in the request as parameter
+     * @param {Function} Optional success callback function to be executed when the request succeed
+     * @param {Function} Optional error callback unction to be executed when there is an error in the request
+     */
+    doPost: function(url, params, successCb, errorCb) {
+        this._doHttpRequest('POST', url, params, successCb, errorCb);
+    },
+
+    /**
+     * It executes an HTTP request call.
+     *
+     * @method _doHttpRequest
+     * @private
+     * @since 0.6.29
+     * @param {String} method POST/GET/etc
+     * @param {String} url Example: /api/stats
+     * @param {JSON} params Any object to be sent in the request as parameter
+     * @param {Function} Optional success callback function to be executed when the request succeed
+     * @param {Function} Optional error callback unction to be executed when there is an error in the request
+     */
+    _doHttpRequest: function(method, url, params, successCb, errorCb) {
+        var xhr = this._createXMLHttpRequest();
+
+        xhr.onabort = xhr.onerror = function(error) {
+            console.log([null, 'XMLHttpRequest', 'Failed XMLHttpRequest.'], error);
+
+            if(errorCb === 'function')
+                errorCb(error);
+        };
+
+        xhr.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                console.log("Statistics posted.", this.responseText);
+
+                if(successCb === 'function')
+                    successCb(this.responseText);
+            }
+        };
+
+        xhr.open(method, url, true);
+        xhr.setRequestHeader('Content-type', 'application/json;charset=UTF-8');
+
+        try {
+            var data = JSON.stringify(params);
+            console.log('Sending statistics', data);
+            xhr.send(data);
+        } catch(e) {
+            console.log([null, 'XMLHttpRequest', method, 'Failed XMLHttpRequest.'], e);
+        }
+    },
+
+    /**
+     * It creates the XMLHttpRequest or XDomainRequest object.
+     *
+     * @method _createXMLHttpRequest
+     * @private
+     * @since 0.6.29
+     * @return {Boolean}
+     */
+    _createXMLHttpRequest: function() {
+        if(this._isXDomainRequestSupported())
+            return this._createXDomainRequest();
+        else
+            return new XMLHttpRequest();
+    },
+
+    /**
+     * It checks if XDomainRequest is supported in IE8 - 9 for CORS connection.
+     *
+     * @method _isXDomainRequestSupported
+     * @private
+     * @since 0.6.29
+     * @return {Boolean}
+     */
+    _isXDomainRequestSupported: function() {
+        return typeof window.XDomainRequest === 'function' || typeof window.XDomainRequest === 'object';
+    },
+
+    /**
+     * It creates the XDomainRequest object.
+     *
+     * @method _createXDomainRequest
+     * @private
+     * @since 0.6.29
+     * @return {Boolean}
+     */
+    _createXDomainRequest: function() {
+        console.log('Creating XDomainRequest.');
+
+        var xDomainRequest = new XDomainRequest();
+        xDomainRequest.setContentType = function (contentType) {
+            xDomainRequest.contentType = contentType;
+        };
+
+        return xDomainRequest;
+    }
+
+};
+
 Skylink.prototype.DATA_CHANNEL_STATE = {
   CONNECTING: 'connecting',
   OPEN: 'open',
@@ -15293,6 +15401,16 @@ Skylink.prototype.SYSTEM_ACTION_REASON = {
  * @since 0.1.0
  */
 Skylink.prototype.VERSION = '0.6.28';
+
+/**
+ * Contains the current SDK Type.
+ * @attribute SDK_TYPE
+ * @type String
+ * @readOnly
+ * @for Skylink
+ * @since 0.6.29
+ */
+Skylink.prototype.SDK_TYPE = 'JS_WEB_SDK';
 
 /**
  * The list of <a href="#method_init"><code>init()</code> method</a> ready states.
@@ -19113,6 +19231,10 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
     if (candidateType === 'endOfCandidates' || !(self._peerConnections[targetMid] &&
       self._peerConnections[targetMid].localDescription && self._peerConnections[targetMid].localDescription.sdp &&
       self._peerConnections[targetMid].localDescription.sdp.indexOf('\r\na=mid:' + candidate.sdpMid + '\r\n') > -1)) {
+
+      var errorMsg = 'End-of-candidates signal or unused ICE candidates to prevent errors.';
+      self.sendIceCandidateAndSDPInfoStats(candidate, null, errorMsg);
+
       log.warn([targetMid, 'RTCIceCandidate', candidateType, 'Dropping of sending ICE candidate ' +
         'end-of-candidates signal or unused ICE candidates to prevent errors ->'], candidate);
       return;
@@ -19120,6 +19242,10 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
 
     if (self._initOptions.filterCandidatesType[candidateType]) {
       if (!(self._hasMCU && self._initOptions.forceTURN)) {
+
+        var errorMsg = 'Dropping of sending ICE candidate as it matches ICE candidate filtering flag.';
+        self.sendIceCandidateAndSDPInfoStats(candidate, null, errorMsg);
+
         log.warn([targetMid, 'RTCIceCandidate', candidateType, 'Dropping of sending ICE candidate as ' +
           'it matches ICE candidate filtering flag ->'], candidate);
         return;
@@ -19144,12 +19270,17 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
     });
 
     if (!self._initOptions.enableIceTrickle) {
+      var errorMsg = 'Dropping of sending ICE candidate as it matches ICE candidate filtering flag.';
+      self.sendIceCandidateAndSDPInfoStats(candidate, null, errorMsg);
+
       log.warn([targetMid, 'RTCIceCandidate', candidateType, 'Dropping of sending ICE candidate as ' +
         'trickle ICE is disabled ->'], candidate);
       return;
     }
 
     log.debug([targetMid, 'RTCIceCandidate', candidateType, 'Sending ICE candidate ->'], candidate);
+
+    self.sendIceCandidateAndSDPInfoStats(candidate, null, null);
 
     self._sendChannelMessage({
       type: self._SIG_MESSAGE_TYPE.CANDIDATE,
@@ -19207,6 +19338,52 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
 };
 
 /**
+ * It builds the candidate and SDP object for stats.
+ *
+ * @method _buildCandidateSDPObjForStats
+ * @private
+ * @since 0.6.29
+ * @param {RTCIceCandidate}
+ * @param {String}
+ * @param {String}
+ * @return {JSON}
+ * VENOSO
+ */
+Skylink.prototype._buildCandidateSDPObjForStats = function(candidate, state, errorMsg) {
+  return {
+    'room_id': this._selectedRoom,
+    'user_id': this._user.uid,
+    'candidate_id': candidate.type + '_' + (new Date()).getTime(),
+    'state': state,
+    'sdpMid': candidate.sdpMid,
+    'sdpMLineIndex': candidate.sdpMLineIndex,
+    'candidate': JSON.stringify(candidate),
+    'error': errorMsg || null
+  };
+};
+
+/**
+ * It builds the candidate object for stats.
+ *
+ * @method _buildCandidateObjForStats
+ * @private
+ * @since 0.6.29
+ * @param {RTCIceCandidate}
+ * @return {JSON}
+ * VENOSO
+ */
+Skylink.prototype._buildCandidateObjForStats = function(candidate) {
+  return {
+    'address': candidate.ip,
+    'port': candidate.port,
+    'candidateType': candidate.type,
+    'network_type': candidate.network_type || null,
+    'transport': candidate.protocol,
+    'priority': candidate.priority
+  };
+};
+
+/**
  * Function that buffers the Peer connection ICE candidate when received
  *   before remote session description is received and set.
  * @method _addIceCandidateToQueue
@@ -19228,6 +19405,8 @@ Skylink.prototype._addIceCandidateToQueue = function(targetMid, canId, candidate
 
   this._peerCandidatesQueue[targetMid] = this._peerCandidatesQueue[targetMid] || [];
   this._peerCandidatesQueue[targetMid].push([canId, candidate]);
+
+  this.sendIceCandidateAndSDPInfoStats(candidate, 'buffered', null);
 };
 
 /**
@@ -19281,12 +19460,15 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
   var onSuccessCbFn = function () {
     log.log([targetMid, 'RTCIceCandidate', canId + ':' + candidateType,
       'Added ICE candidate successfully.']);
+
     self._trigger('candidateProcessingState', self.CANDIDATE_PROCESSING_STATE.PROCESS_SUCCESS,
       targetMid, canId, candidateType, {
       candidate: candidate.candidate,
       sdpMid: candidate.sdpMid,
       sdpMLineIndex: candidate.sdpMLineIndex
     }, null);
+
+    self.sendIceCandidateAndSDPInfoStats(candidate, 'success', null);
   };
 
   var onErrorCbFn = function (error) {
@@ -19298,6 +19480,8 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
       sdpMid: candidate.sdpMid,
       sdpMLineIndex: candidate.sdpMLineIndex
     }, error);
+
+    self.sendIceCandidateAndSDPInfoStats(candidate, 'failed', error.toString());
   };
 
   log.debug([targetMid, 'RTCIceCandidate', canId + ':' + candidateType, 'Adding ICE candidate.']);
@@ -19322,6 +19506,12 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
       sdpMid: candidate.sdpMid,
       sdpMLineIndex: candidate.sdpMLineIndex
     }, new Error('Failed processing ICE candidate as Peer connection does not exists or is closed.'));
+
+    self.sendIceCandidateAndSDPInfoStat(
+      candidate,
+      'dropped',
+      'Failed processing ICE candidate as Peer connection does not exists or is closed.');
+
     return;
   }
 
@@ -21202,8 +21392,12 @@ Skylink.prototype._createPeerConnection = function(targetMid, isScreenSharing, c
   };
 
   pc.oniceconnectionstatechange = function(evt) {
-    var iceConnectionState = pc.iceConnectionState;
+    self.sendIceAgentInfo({
+      statsPromise: pc.getStats(),
+      state: pc.iceConnectionState
+    });
 
+    var iceConnectionState = pc.iceConnectionState;
     log.debug([targetMid, 'RTCIceConnectionState', null, 'Ice connection state changed ->'], iceConnectionState);
 
     if (AdapterJS.webrtcDetectedBrowser === 'edge') {
@@ -22348,6 +22542,8 @@ Skylink.prototype._doOffer = function(targetMid, iceRestart) {
   var onSuccessCbFn = function(offer) {
     log.debug([targetMid, null, null, 'Created offer'], offer);
     self._setLocalAndSendMessage(targetMid, offer);
+
+    self.sendNegotiationInfoStats('local-offer', self._peerPriorityWeight, offer.sdp, offer.type);
   };
 
   var onErrorCbFn = function(error) {
@@ -23662,6 +23858,15 @@ Skylink.prototype.init = function(_options, _callback) {
   // `init({ forceSSL: true })`
   options.forceSSL = options.forceSSL !== false;
 
+  // `init({ enableStats: true })`
+  options.enableStats = options.enableStats === true;
+
+  // `init({ statsURL: "//xxx.xxx.xxx/" })`
+  options.statsURL = options.statsURL || options.roomServer;
+
+  // `init({ enableStatsLog: "https://xxx.xxx.xxx/" })`
+  options.enableStatsLog = options.enableStatsLog === true;
+
   // `init({ socketTimeout: 20000 })`
   options.socketTimeout = typeof options.socketTimeout === 'number' && options.socketTimeout >= 5000 ? options.socketTimeout : 7000;
 
@@ -24015,6 +24220,7 @@ Skylink.prototype._requestServerInfo = function(method, url, callback, params) {
       if (completed) {
         return;
       }
+
       completed = true;
       log.error([null, 'XMLHttpRequest', method, 'Failed retrieving information with status ->'], xhr.status);
 
@@ -24033,7 +24239,7 @@ Skylink.prototype._requestServerInfo = function(method, url, callback, params) {
       });
     };
 
-    try {
+    try {;
       xhr.open(method, url, true);
       if (params) {
         xhr.setContentType('application/json;charset=UTF-8');
@@ -24086,6 +24292,7 @@ Skylink.prototype._requestServerInfo = function(method, url, callback, params) {
  */
 Skylink.prototype._parseInfo = function(info) {
   log.log('Parsing parameter from server', info);
+
   if (!info.pc_constraints && !info.offer_constraints) {
     this._trigger('readyStateChange', this.READY_STATE_CHANGE.ERROR, {
       status: 200,
@@ -24143,6 +24350,9 @@ Skylink.prototype._parseInfo = function(info) {
   this._readyState = this.READY_STATE_CHANGE.COMPLETED;
   this._trigger('readyStateChange', this.READY_STATE_CHANGE.COMPLETED, null, this._selectedRoom);
   log.info('Parsed parameters from webserver. Ready for web-realtime communication');
+
+  this.initStatsModule();
+  this.sendAuthInfoStats(info);
 };
 
 /**
@@ -24271,6 +24481,7 @@ Skylink.prototype._initSelectedRoom = function(room, callback) {
     callback(new Error('Invalid room provided'), null);
     return;
   }
+
   var defaultRoom = self._initOptions.defaultRoom;
   var options = clone(self._initOptions);
   options.iceServer = options.iceServer ? options.iceServer.urls : null;
@@ -24284,6 +24495,7 @@ Skylink.prototype._initSelectedRoom = function(room, callback) {
     if (error) {
       callback(error, null);
     } else {
+      self.initStatsModule();
       callback(null, success);
     }
   });
@@ -26570,6 +26782,9 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   socket.on('reconnect_attempt', function (attempt) {
     retries++;
     self._socketSession.attempts++;
+
+    self.sendClientSignalingInfoStats('reconnect_attempt');
+
     self._trigger('channelRetry', fallbackType, self._socketSession.attempts, clone(self._socketSession));
   });
 
@@ -26591,6 +26806,8 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   });
 
   socket.on('connect', function () {
+    self.sendClientSignalingInfoStats('connect');
+
     if (!self._channelOpen) {
       log.log([null, 'Socket', null, 'Channel opened']);
       self._channelOpen = true;
@@ -26599,6 +26816,8 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   });
 
   socket.on('reconnect', function () {
+    self.sendClientSignalingInfoStats('reconnect');
+
     if (!self._channelOpen) {
       log.log([null, 'Socket', null, 'Channel opened']);
       self._channelOpen = true;
@@ -26607,6 +26826,8 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   });
 
   socket.on('error', function(error) {
+    self.sendClientSignalingInfoStats('error');
+
     if (error ? error.message.indexOf('xhr poll error') > -1 : false) {
       log.error([null, 'Socket', null, 'XHR poll connection unstable. Disconnecting.. ->'], error);
       self._closeChannel();
@@ -26617,6 +26838,8 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   });
 
   socket.on('disconnect', function() {
+    self.sendClientSignalingInfoStats('disconnect');
+
     if (self._channelOpen) {
       self._channelOpen = false;
       self._trigger('channelClose', clone(self._socketSession));
@@ -27654,6 +27877,19 @@ Skylink.prototype._inRoomHandler = function(message) {
   self._sendChannelMessage(enterMsg);
 };
 
+Skylink.prototype._buildNegotiationInfoObj = function(state, weight, sdp, error) {
+  return {
+    'room_id': this._selectedRoom,
+    'user_id': this._user.uid,
+    'peer_id': this._socket.id,
+    'state': state,
+    'error': error || null,
+    'weight': weight,
+    'sdp_type': sdp ? sdp.type : null,
+    'sdp_sdp': sdp ? sdp.sdp : null
+  };
+};
+
 /**
  * Function that handles the "enter" socket message received.
  * See confluence docs for the "enter" expected properties to be received
@@ -27665,6 +27901,9 @@ Skylink.prototype._inRoomHandler = function(message) {
  */
 Skylink.prototype._enterHandler = function(message) {
   var self = this;
+
+  this.sendNegotiationInfoStats('enter', message.weight);
+
   var targetMid = message.mid;
   var isNewPeer = false;
   var userInfo = message.userInfo || {};
@@ -27828,6 +28067,8 @@ Skylink.prototype._restartHandler = function(message){
   var self = this;
   var targetMid = message.mid;
   var userInfo = message.userInfo || {};
+
+
   userInfo.settings = userInfo.settings || {};
   userInfo.mediaStatus = userInfo.mediaStatus || {};
   userInfo.config = {
@@ -27838,6 +28079,8 @@ Skylink.prototype._restartHandler = function(message){
     receiveOnly: message.receiveOnly === true,
     publishOnly: !!message.publishOnly
   };
+
+  debugger;
   userInfo.parentId = message.parentId || null;
   userInfo.agent = {
     name: typeof message.agent === 'string' && message.agent ? message.agent : 'other',
@@ -27866,6 +28109,7 @@ Skylink.prototype._restartHandler = function(message){
       message.DTProtocolVersion : (self._hasMCU || targetMid === 'MCU' ? '0.1.2' : '0.1.0')
   };
 
+  debugger;
   log.log([targetMid, 'RTCPeerConnection', null, 'Peer "restart" received ->'], message);
 
   if (!self._peerInformations[targetMid]) {
@@ -27877,6 +28121,7 @@ Skylink.prototype._restartHandler = function(message){
   //          : User is parent and parentId is defined and matches
   //          : User is child and parent matches
   // Don't if : Is MCU
+  debugger;
   if (targetMid !== 'MCU' && ((self._parentId && self._parentId === targetMid) ||
     (self._hasMCU && self._publishOnly) || (message.parentId && self._user && self._user.sid &&
     message.parentId === self._user.sid))) {
@@ -27967,6 +28212,9 @@ Skylink.prototype._restartHandler = function(message){
  */
 Skylink.prototype._welcomeHandler = function(message) {
   var self = this;
+
+  this.sendNegotiationInfoStats('welcome', message.weight);
+
   var targetMid = message.mid;
   var isNewPeer = false;
   var userInfo = message.userInfo || {};
@@ -28481,6 +28729,336 @@ Skylink.prototype._isLowerThanVersion = function (agentVer, requiredVer) {
 
   return false;
 };
+
+Skylink.prototype._statsEndpoints = {
+    'client': 'client',
+    'auth': 'auth',
+    'clientSignaling': 'signaling',
+    'signalingSocket': 'client/signaling',
+    'iceconnection': 'client/iceconnection',
+    'icecandidate': 'client/icecandidate',
+    'negotiation': 'client/negotiation',
+    'bandwidth': 'client/bandwidth',
+    'recording': 'client/recording'
+};
+
+/**
+ * It builds a URL concatenating statsURL, which was set at the configuration file, plus BASE_URL
+ * and the correspoiding endpoint.
+ *
+ * @method _buildStatsURL
+ * @private
+ * @since 0.6.29
+ * @param {String} endPoint Example: /api/stats
+ * @return {String} The url with https://xxx.xxx.xxx./api/rest/stats/client'
+ */
+Skylink.prototype._buildStatsURL = function(endPoint) {
+    return this._initOptions.forceSSL ? 'https:' : 'http:' + this._initOptions.statsURL + '/rest/stats/' + endPoint;
+};
+
+/**
+ * It builds the data for the given params.
+ * It fetches the endpoint from the concrete classes.
+ * It sends the information to the stats server.
+ *
+ * @private
+ * @method _sendStatsInfo
+ * @since 0.6.29
+ * @param {String} Service endpoint chunk URL E.g. client/signaling.
+ * @param {JSON} Any data that wants to be sent to the stats server. It will be
+ * Stringified in the HTTP service class.
+ */
+Skylink.prototype._sendStatsInfo = function(endpoint, data) {
+    try {
+        if(!this._initOptions.enableStats)
+            return;
+
+        HTTP.doPost(this._buildStatsURL(endpoint), data);
+    } catch(error) {
+        console.log('Statistics module failed sending datas.', error);
+    }
+};
+
+/**
+ * It creates the client id concatenating (this.appKeyOwner || 'dummy') _ + Date.now() + a random number.
+ * The why of the dummy data is because the skilink.init() is executed twice. During the first
+ * execution it does not retrive the apiKeyOwner; however, in the second execution it retrieves
+ * the API owner.
+ *
+ * @method _createClientIDStats
+ * @private
+ * @since 0.6.29
+ * @return {String} Client id
+ */
+Skylink.prototype._createClientIDStats = function() {
+    return (this._appKeyOwner  || 'dummy') + '_' + (Date.now() + Math.floor(Math.random() * 1000000));
+};
+
+/**
+ * It initializes the Stats module.
+ * It creates a client_id.
+ * This function has to be called when the room inits. During the second call Skylink will get
+ * the appKeyOwner. In the first call the client_id will be a 'dummy' one.
+ *
+ * @method initStatsModule
+ * @public
+ * @since 0.6.29
+ * @param {JSON} Response from the XMLHTTPRequest for either success or error.
+ */
+Skylink.prototype.initStatsModule = function() {
+    this._clientIDStats = this._createClientIDStats();
+};
+
+/**
+ * It sends the authentication stats information.
+ *
+ * @method sendAuthInfoStats
+ * @public
+ * @since 0.6.29
+ * @param {JSON} Response from the XMLHTTPRequest for either success or error.
+ */
+Skylink.prototype.sendAuthInfoStats = function(apiResult) {
+    this._sendStatsInfo(
+        this._statsEndpoints.auth,
+        {
+            'client_id': this._clientIDStats,
+            'app_key': this._initOptions.appKey,
+            'timestamp': new Date().toISOString(),
+            'api_url': this._initOptions.statsURL,
+            'api_result': JSON.stringify(apiResult)
+        }
+    );
+};
+
+/**
+ * It sends the client signalling stats information.
+ *
+ * @method sendClientSignalingInfoStats
+ * @public
+ * @since 0.6.29
+ * @param {String}
+ */
+Skylink.prototype.sendClientSignalingInfoStats = function(currentState) {
+    this._sendStatsInfo(
+        this._statsEndpoints.clientSignaling,
+        {
+            'client_id': this._clientIDStats,
+            'app_key': this._initOptions.appKey,
+            'timestamp': new Date().toISOString(),
+            'room_id': this._initOptions.defaultRoom,
+            'state': currentState,
+            'server': this._signalingServer,
+            'port': this._signalingServerPort,
+            'transport': this._socketSession.transportType,
+            'attempts': this._socketSession.attempts
+        }
+    );
+};
+
+
+/**
+ * It sends the peer stats information.
+ *
+ * @method sendPeerInfoStats
+ * @public
+ * @since 0.6.29
+ * @param {MediaStream} WebRTC media stream.
+ */
+Skylink.prototype.sendPeerInfoStats = function(mediaStream) {
+    // It builds the AudioMedia object.
+    var audioMedia = [];
+
+    try {
+        for(var i = 0; i < audioTracks.length; i++)
+            audioMedia.push({
+                'id': audioTracks[i].id || null,
+                'stream_id': audioTracks[i].stream_id || null
+            });
+    } catch(error) {
+        audioMedia = [];
+    }
+
+    // It builds the VideoMedia object.
+    var videoMedia = [];
+
+    try {
+        for(var i = 0; i < videoTracks.length; i++)
+            videoMedia.push({
+                'id': videoTracks[i].id || null,
+                'stream_id': videoTracks[i].stream_id || null,
+                'resolution_width': videoTracks[i].resolution_width || null,
+                'resolution_height': videoTracks[i].resolution_height || null
+            });
+    } catch (error) {
+        videoMedia = [];
+    }
+
+    // It builds the entire object.
+    var data = {
+        'client_id': this._clientIDStats,
+        'app_key': this.appKey,
+        'timestamp': new Date().toISOString(),
+        'sdk': {
+            'name': this.SDK_TYPE,
+            'version': this.VERSION
+        },
+        'agent': {
+            'platform': navigator.platform,
+            'name': AdapterJS.webrtcDetectedBrowser,
+            'version': AdapterJS.webrtcDetectedVersion || 0,
+            'platform': window.navigator.platform || null,
+            'pluginVersion': AdapterJS.WebRTCPlugin.plugin ? AdapterJS.WebRTCPlugin.plugin.VERSION : null
+        },
+        'media': {
+            'audio': audioMedia,
+            'video': videoMedia
+        }
+    };
+
+    this._sendStatsInfo(this._statsEndpoints.client, data);
+};
+
+/**
+ * It sends ICE Agent state information.
+ * It gather the peerConnection.getStats() and the change of state
+ * in the method.
+ *
+ * @method sendIceAgentInfo
+ * @public
+ * @since 0.6.29
+ * @param {JSON} { statsPromise: WebRTCStats, state: String }
+ */
+Skylink.prototype.sendIceAgentInfo = function(options) {
+    var self = this;
+    var rtcStatsReport;
+
+    options.statsPromise
+    .then(function(_rtcStatsReport) {
+        var localCandidates = [];
+        var remoteCandidates = [];
+        var state = options.state;
+
+        rtcStatsReport = _rtcStatsReport;
+
+        rtcStatsReport.forEach(function(entry) {
+            if(entry.id.indexOf('RTCIceCandidatePair') >= 0) {
+                console.log(entry)
+                // Temporal and explanatory variables.
+                var localCandidateEntry = rtcStatsReport.get(entry.localCandidateId);
+                var remoteCandidateEntry = rtcStatsReport.get(entry.remoteCandidateId);
+
+                // Temporal and explanatory variables.
+                var localCandidateInfo = self._buildCandidateInfoForIceAgentState(localCandidateEntry);
+                var remoteCandidateInfo = self._buildCandidateInfoForIceAgentState(remoteCandidateEntry);
+
+                if(localCandidateInfo)
+                    localCandidates.push(localCandidateInfo)
+
+                if(remoteCandidateInfo)
+                    remoteCandidates.push(remoteCandidateInfo)
+            }
+        }.bind(this));
+
+        debugger;
+        this._sendStatsInfo(
+            this._statsEndpoints.iceconnection,
+            {
+                'client_id': this._clientIDStats,
+                'app_key': this.appKey,
+                'room_id': this._selectedRoom,
+                'timestamp': new Date().toISOString(),
+                'user_id': this._user.uid,
+                'peer_id': this._socket.id,
+                'state': options.state,
+                'is_trickle': self._initOptions.enableIceTrickle,
+                'local_candidate': JSON.stringify(localCandidates),
+                'remote_candidate': JSON.stringify(remoteCandidates)
+            }
+        );
+    })
+};
+
+/**
+ * It builds the candidate informationb object.
+ *
+ * @method _buildCandidateInfoForIceAgentState
+ * @private
+ * @since 0.6.29
+ * @param {RTCCandidate}
+ * @return {JSON}
+ */
+Skylink.prototype._buildCandidateInfoForIceAgentState = function(candidate) {
+    if(candidate)
+        return {
+            address: candidate.ip,
+            port: candidate.port,
+            candidateType: candidate.candidateType,
+            network_type: candidate.networkType || null,
+            transport: candidate.transportId,
+            priority: candidate.priority
+        }
+};
+
+/**
+ * It sends the peer stats information.
+ *
+ * @method sendIceCandidateAndSDPInfoStats
+ * @public
+ * @since 0.6.29
+ * @param {RTCIceCandidate}
+ * @param {String}
+ * @param {String}
+ */
+Skylink.prototype.sendIceCandidateAndSDPInfoStats = function(candidate, state, errorMsg) {
+    this._sendStatsInfo(
+        this._statsEndpoints.icecandidate,
+        {
+            'client_id': this._clientIDStats,
+            'app_key': this.appKey,
+            'room_id': this._selectedRoom,
+            'timestamp': new Date().toISOString(),
+            'user_id': this._user.uid,
+            'peer_id': this._socket.id,
+            'candidate_id': candidate.type + '_' + (new Date()).getTime(),
+            'state': state,
+            'sdpMid': candidate.sdpMid,
+            'sdpMLineIndex': candidate.sdpMLineIndex,
+            'candidate': JSON.stringify(candidate),
+            'error': errorMsg || null
+        }
+    );
+};
+
+ /**
+ * It sends peer negotiation status information.
+ *
+ * @method sendNegotiationInfoStats
+ * @public
+ * @since 0.6.29
+ * @param {String}
+ * @param {String}
+ * @param {String}
+ * @param {String}
+ * @param {String}
+ */
+Skylink.prototype.sendNegotiationInfoStats = function(state, weight, sdp, sdpType, error) {
+    this._sendStatsInfo(
+        this._statsEndpoints.negotiation,
+        {
+            'client_id': this._clientIDStats,
+            'app_key': this.appKey,
+            'room_id': this._selectedRoom,
+            'user_id': this._user.uid,
+            'peer_id': this._socket.id,
+            'state': state,
+            'error': error || null,
+            'weight': weight,
+            'sdp_type': sdpType || null,
+            'sdp_sdp': sdp || null
+        }
+    );
+};
+
 
 Skylink.prototype.getUserMedia = function(options,callback) {
   var self = this;
@@ -30055,6 +30633,8 @@ Skylink.prototype._onStreamAccessSuccess = function(stream, settings, isScreenSh
   var streamId = stream.id || stream.label;
   var streamHasEnded = false;
 
+
+  self.sendPeerInfoStats(stream);
   log.log([null, 'MediaStream', streamId, 'Has access to stream ->'], stream);
 
   // Stop previous stream

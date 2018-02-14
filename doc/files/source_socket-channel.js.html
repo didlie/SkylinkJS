@@ -391,6 +391,9 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   socket.on(&#x27;reconnect_attempt&#x27;, function (attempt) {
     retries++;
     self._socketSession.attempts++;
+
+    self.sendClientSignalingInfoStats(&#x27;reconnect_attempt&#x27;);
+
     self._trigger(&#x27;channelRetry&#x27;, fallbackType, self._socketSession.attempts, clone(self._socketSession));
   });
 
@@ -412,6 +415,8 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   });
 
   socket.on(&#x27;connect&#x27;, function () {
+    self.sendClientSignalingInfoStats(&#x27;connect&#x27;);
+
     if (!self._channelOpen) {
       log.log([null, &#x27;Socket&#x27;, null, &#x27;Channel opened&#x27;]);
       self._channelOpen = true;
@@ -420,6 +425,8 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   });
 
   socket.on(&#x27;reconnect&#x27;, function () {
+    self.sendClientSignalingInfoStats(&#x27;reconnect&#x27;);
+
     if (!self._channelOpen) {
       log.log([null, &#x27;Socket&#x27;, null, &#x27;Channel opened&#x27;]);
       self._channelOpen = true;
@@ -428,6 +435,8 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   });
 
   socket.on(&#x27;error&#x27;, function(error) {
+    self.sendClientSignalingInfoStats(&#x27;error&#x27;);
+
     if (error ? error.message.indexOf(&#x27;xhr poll error&#x27;) &gt; -1 : false) {
       log.error([null, &#x27;Socket&#x27;, null, &#x27;XHR poll connection unstable. Disconnecting.. -&gt;&#x27;], error);
       self._closeChannel();
@@ -438,6 +447,8 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
   });
 
   socket.on(&#x27;disconnect&#x27;, function() {
+    self.sendClientSignalingInfoStats(&#x27;disconnect&#x27;);
+
     if (self._channelOpen) {
       self._channelOpen = false;
       self._trigger(&#x27;channelClose&#x27;, clone(self._socketSession));

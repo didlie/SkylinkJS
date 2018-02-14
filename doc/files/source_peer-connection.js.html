@@ -1987,8 +1987,12 @@ Skylink.prototype._createPeerConnection = function(targetMid, isScreenSharing, c
   };
 
   pc.oniceconnectionstatechange = function(evt) {
-    var iceConnectionState = pc.iceConnectionState;
+    self.sendIceAgentInfo({
+      statsPromise: pc.getStats(),
+      state: pc.iceConnectionState
+    });
 
+    var iceConnectionState = pc.iceConnectionState;
     log.debug([targetMid, &#x27;RTCIceConnectionState&#x27;, null, &#x27;Ice connection state changed -&gt;&#x27;], iceConnectionState);
 
     if (AdapterJS.webrtcDetectedBrowser === &#x27;edge&#x27;) {

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>SkylinkJS 0.6.28</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- font and icon -->
+    <link rel="shortcut icon" type="image/ico" href="../assets/favicon.ico">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700|Source+Sans+Pro" type="text/css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700|Source+Code+Pro" type="text/css">
+    <!-- styling -->
+    <link rel="stylesheet" href="../assets/vendor/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/vendor/css/bootstrap-theme.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <!-- scripts -->
+    <script src="../assets/vendor/js/jquery.min.js"></script>
+    <script src="../assets/vendor/js/bootstrap.min.js"></script>
+    <script src="../assets/js/script.js"></script>
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body>
+
+<div id="doc">
+  <nav id="hd" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a href="" class="navbar-brand">
+          <img src="../assets/img/logo.svg" /><small>Version: 0.6.28</small>
+        </a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul id="api-list" class="nav navbar-nav navbar-right">
+  <li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Getting Started Examples <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+      <li><a href="https://temasys.io/getting-started-with-webrtc-and-skylinkjs/">Setting up a Video Call</a></li>
+      <li><a href="https://temasys.io/screensharing-with-skylinkjs/">Setting up Screensharing</a></li>
+      <li><a href="https://temasys.io/building-a-simple-peer-to-peer-webrtc-chat/">Setting up a Chatroom</a></li>
+    </ul>
+  </li>
+  
+    <li><a href="../classes/Skylink.html">Documentation</a></li>
+  
+  <!--<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Classes <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+      
+        <li><a href="../classes/Skylink.html">Skylink</a></li>
+      
+    </ul>
+  </li>-->
+  <li><a class="btn btn-info btn-navbar" href="https://console.temasys.io/">Developer Console</a></li>
+  <li><a class="btn btn-info btn-navbar" href="http://support.temasys.io/">Support</a></li>
+  <!--<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Modules <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+      <li><a href="#api-modules">View all Modules</a></li>
+      
+    </ul>
+  </li>-->
+</ul>
+<!--<form id="api-tabview" class="navbar-form navbar-right" role="form">
+  <div id="api-tabview-filter" class="form-group">
+    <input type="search" id="api-filter" placeholder="Type to filter APIs">
+  </div>
+</form>-->
+      </div><!--/.navbar-collapse -->
+    </div>
+  </nav>
+  <div id="bd" class="yui3-g">
+
+      <div class="yui3-u-1-4">
+
+      </div>
+      <div class="yui3-u-3-4">
+          
+          <div class="apidocs">
+              <div id="docs-main">
+                  <div class="content content-main">
+                      <h1 class="file-heading">File: source/stats.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/**
+ * Stats endpoints URL chunks.
+ */
+Skylink.prototype._statsEndpoints = {
+    &#x27;client&#x27;: &#x27;client&#x27;,
+    &#x27;auth&#x27;: &#x27;auth&#x27;,
+    &#x27;clientSignaling&#x27;: &#x27;signaling&#x27;,
+    &#x27;signalingSocket&#x27;: &#x27;client/signaling&#x27;,
+    &#x27;iceconnection&#x27;: &#x27;client/iceconnection&#x27;,
+    &#x27;icecandidate&#x27;: &#x27;client/icecandidate&#x27;,
+    &#x27;negotiation&#x27;: &#x27;client/negotiation&#x27;,
+    &#x27;bandwidth&#x27;: &#x27;client/bandwidth&#x27;,
+    &#x27;recording&#x27;: &#x27;client/recording&#x27;
+};
+
+/**
+ * It builds a URL concatenating statsURL, which was set at the configuration file, plus BASE_URL
+ * and the correspoiding endpoint.
+ *
+ * @method _buildStatsURL
+ * @private
+ * @since 0.6.29
+ * @param {String} endPoint Example: /api/stats
+ * @return {String} The url with https://xxx.xxx.xxx./api/rest/stats/client&#x27;
+ */
+Skylink.prototype._buildStatsURL = function(endPoint) {
+    return this._initOptions.forceSSL ? &#x27;https:&#x27; : &#x27;http:&#x27; + this._initOptions.statsURL + &#x27;/rest/stats/&#x27; + endPoint;
+};
+
+/**
+ * It builds the data for the given params.
+ * It fetches the endpoint from the concrete classes.
+ * It sends the information to the stats server.
+ *
+ * @private
+ * @method _sendStatsInfo
+ * @since 0.6.29
+ * @param {String} Service endpoint chunk URL E.g. client/signaling.
+ * @param {JSON} Any data that wants to be sent to the stats server. It will be
+ * Stringified in the HTTP service class.
+ */
+Skylink.prototype._sendStatsInfo = function(endpoint, data) {
+    try {
+        if(!this._initOptions.enableStats)
+            return;
+
+        HTTP.doPost(this._buildStatsURL(endpoint), data);
+    } catch(error) {
+        console.log(&#x27;Statistics module failed sending datas.&#x27;, error);
+    }
+};
+
+/**
+ * It creates the client id concatenating (this.appKeyOwner || &#x27;dummy&#x27;) _ + Date.now() + a random number.
+ * The why of the dummy data is because the skilink.init() is executed twice. During the first
+ * execution it does not retrive the apiKeyOwner; however, in the second execution it retrieves
+ * the API owner.
+ *
+ * @method _createClientIDStats
+ * @private
+ * @since 0.6.29
+ * @return {String} Client id
+ */
+Skylink.prototype._createClientIDStats = function() {
+    return (this._appKeyOwner  || &#x27;dummy&#x27;) + &#x27;_&#x27; + (Date.now() + Math.floor(Math.random() * 1000000));
+};
+
+/**
+ * It initializes the Stats module.
+ * It creates a client_id.
+ * This function has to be called when the room inits. During the second call Skylink will get
+ * the appKeyOwner. In the first call the client_id will be a &#x27;dummy&#x27; one.
+ *
+ * @method initStatsModule
+ * @public
+ * @since 0.6.29
+ * @param {JSON} Response from the XMLHTTPRequest for either success or error.
+ */
+Skylink.prototype.initStatsModule = function() {
+    this._clientIDStats = this._createClientIDStats();
+};
+
+/**
+ * It sends the authentication stats information.
+ *
+ * @method sendAuthInfoStats
+ * @public
+ * @since 0.6.29
+ * @param {JSON} Response from the XMLHTTPRequest for either success or error.
+ */
+Skylink.prototype.sendAuthInfoStats = function(apiResult) {
+    this._sendStatsInfo(
+        this._statsEndpoints.auth,
+        {
+            &#x27;client_id&#x27;: this._clientIDStats,
+            &#x27;app_key&#x27;: this._initOptions.appKey,
+            &#x27;timestamp&#x27;: new Date().toISOString(),
+            &#x27;api_url&#x27;: this._initOptions.statsURL,
+            &#x27;api_result&#x27;: JSON.stringify(apiResult)
+        }
+    );
+};
+
+/**
+ * It sends the client signalling stats information.
+ *
+ * @method sendClientSignalingInfoStats
+ * @public
+ * @since 0.6.29
+ * @param {String}
+ */
+Skylink.prototype.sendClientSignalingInfoStats = function(currentState) {
+    this._sendStatsInfo(
+        this._statsEndpoints.clientSignaling,
+        {
+            &#x27;client_id&#x27;: this._clientIDStats,
+            &#x27;app_key&#x27;: this._initOptions.appKey,
+            &#x27;timestamp&#x27;: new Date().toISOString(),
+            &#x27;room_id&#x27;: this._initOptions.defaultRoom,
+            &#x27;state&#x27;: currentState,
+            &#x27;server&#x27;: this._signalingServer,
+            &#x27;port&#x27;: this._signalingServerPort,
+            &#x27;transport&#x27;: this._socketSession.transportType,
+            &#x27;attempts&#x27;: this._socketSession.attempts
+        }
+    );
+};
+
+
+/**
+ * It sends the peer stats information.
+ *
+ * @method sendPeerInfoStats
+ * @public
+ * @since 0.6.29
+ * @param {MediaStream} WebRTC media stream.
+ */
+Skylink.prototype.sendPeerInfoStats = function(mediaStream) {
+    // It builds the AudioMedia object.
+    var audioMedia = [];
+
+    try {
+        for(var i = 0; i &lt; audioTracks.length; i++)
+            audioMedia.push({
+                &#x27;id&#x27;: audioTracks[i].id || null,
+                &#x27;stream_id&#x27;: audioTracks[i].stream_id || null
+            });
+    } catch(error) {
+        audioMedia = [];
+    }
+
+    // It builds the VideoMedia object.
+    var videoMedia = [];
+
+    try {
+        for(var i = 0; i &lt; videoTracks.length; i++)
+            videoMedia.push({
+                &#x27;id&#x27;: videoTracks[i].id || null,
+                &#x27;stream_id&#x27;: videoTracks[i].stream_id || null,
+                &#x27;resolution_width&#x27;: videoTracks[i].resolution_width || null,
+                &#x27;resolution_height&#x27;: videoTracks[i].resolution_height || null
+            });
+    } catch (error) {
+        videoMedia = [];
+    }
+
+    // It builds the entire object.
+    var data = {
+        &#x27;client_id&#x27;: this._clientIDStats,
+        &#x27;app_key&#x27;: this.appKey,
+        &#x27;timestamp&#x27;: new Date().toISOString(),
+        &#x27;sdk&#x27;: {
+            &#x27;name&#x27;: this.SDK_TYPE,
+            &#x27;version&#x27;: this.VERSION
+        },
+        &#x27;agent&#x27;: {
+            &#x27;platform&#x27;: navigator.platform,
+            &#x27;name&#x27;: AdapterJS.webrtcDetectedBrowser,
+            &#x27;version&#x27;: AdapterJS.webrtcDetectedVersion || 0,
+            &#x27;platform&#x27;: window.navigator.platform || null,
+            &#x27;pluginVersion&#x27;: AdapterJS.WebRTCPlugin.plugin ? AdapterJS.WebRTCPlugin.plugin.VERSION : null
+        },
+        &#x27;media&#x27;: {
+            &#x27;audio&#x27;: audioMedia,
+            &#x27;video&#x27;: videoMedia
+        }
+    };
+
+    this._sendStatsInfo(this._statsEndpoints.client, data);
+};
+
+/**
+ * It sends ICE Agent state information.
+ * It gather the peerConnection.getStats() and the change of state
+ * in the method.
+ *
+ * @method sendIceAgentInfo
+ * @public
+ * @since 0.6.29
+ * @param {JSON} { statsPromise: WebRTCStats, state: String }
+ */
+Skylink.prototype.sendIceAgentInfo = function(options) {
+    var self = this;
+    var rtcStatsReport;
+
+    options.statsPromise
+    .then(function(_rtcStatsReport) {
+        var localCandidates = [];
+        var remoteCandidates = [];
+        var state = options.state;
+
+        rtcStatsReport = _rtcStatsReport;
+
+        rtcStatsReport.forEach(function(entry) {
+            if(entry.id.indexOf(&#x27;RTCIceCandidatePair&#x27;) &gt;= 0) {
+                console.log(entry)
+                // Temporal and explanatory variables.
+                var localCandidateEntry = rtcStatsReport.get(entry.localCandidateId);
+                var remoteCandidateEntry = rtcStatsReport.get(entry.remoteCandidateId);
+
+                // Temporal and explanatory variables.
+                var localCandidateInfo = self._buildCandidateInfoForIceAgentState(localCandidateEntry);
+                var remoteCandidateInfo = self._buildCandidateInfoForIceAgentState(remoteCandidateEntry);
+
+                if(localCandidateInfo)
+                    localCandidates.push(localCandidateInfo)
+
+                if(remoteCandidateInfo)
+                    remoteCandidates.push(remoteCandidateInfo)
+            }
+        }.bind(this));
+
+        debugger;
+        this._sendStatsInfo(
+            this._statsEndpoints.iceconnection,
+            {
+                &#x27;client_id&#x27;: this._clientIDStats,
+                &#x27;app_key&#x27;: this.appKey,
+                &#x27;room_id&#x27;: this._selectedRoom,
+                &#x27;timestamp&#x27;: new Date().toISOString(),
+                &#x27;user_id&#x27;: this._user.uid,
+                &#x27;peer_id&#x27;: this._socket.id,
+                &#x27;state&#x27;: options.state,
+                &#x27;is_trickle&#x27;: self._initOptions.enableIceTrickle,
+                &#x27;local_candidate&#x27;: JSON.stringify(localCandidates),
+                &#x27;remote_candidate&#x27;: JSON.stringify(remoteCandidates)
+            }
+        );
+    })
+};
+
+/**
+ * It builds the candidate informationb object.
+ *
+ * @method _buildCandidateInfoForIceAgentState
+ * @private
+ * @since 0.6.29
+ * @param {RTCCandidate}
+ * @return {JSON}
+ */
+Skylink.prototype._buildCandidateInfoForIceAgentState = function(candidate) {
+    if(candidate)
+        return {
+            address: candidate.ip,
+            port: candidate.port,
+            candidateType: candidate.candidateType,
+            network_type: candidate.networkType || null,
+            transport: candidate.transportId,
+            priority: candidate.priority
+        }
+};
+
+/**
+ * It sends the peer stats information.
+ *
+ * @method sendIceCandidateAndSDPInfoStats
+ * @public
+ * @since 0.6.29
+ * @param {RTCIceCandidate}
+ * @param {String}
+ * @param {String}
+ */
+Skylink.prototype.sendIceCandidateAndSDPInfoStats = function(candidate, state, errorMsg) {
+    this._sendStatsInfo(
+        this._statsEndpoints.icecandidate,
+        {
+            &#x27;client_id&#x27;: this._clientIDStats,
+            &#x27;app_key&#x27;: this.appKey,
+            &#x27;room_id&#x27;: this._selectedRoom,
+            &#x27;timestamp&#x27;: new Date().toISOString(),
+            &#x27;user_id&#x27;: this._user.uid,
+            &#x27;peer_id&#x27;: this._socket.id,
+            &#x27;candidate_id&#x27;: candidate.type + &#x27;_&#x27; + (new Date()).getTime(),
+            &#x27;state&#x27;: state,
+            &#x27;sdpMid&#x27;: candidate.sdpMid,
+            &#x27;sdpMLineIndex&#x27;: candidate.sdpMLineIndex,
+            &#x27;candidate&#x27;: JSON.stringify(candidate),
+            &#x27;error&#x27;: errorMsg || null
+        }
+    );
+};
+
+ /**
+ * It sends peer negotiation status information.
+ *
+ * @method sendNegotiationInfoStats
+ * @public
+ * @since 0.6.29
+ * @param {String}
+ * @param {String}
+ * @param {String}
+ * @param {String}
+ * @param {String}
+ */
+Skylink.prototype.sendNegotiationInfoStats = function(state, weight, sdp, sdpType, error) {
+    this._sendStatsInfo(
+        this._statsEndpoints.negotiation,
+        {
+            &#x27;client_id&#x27;: this._clientIDStats,
+            &#x27;app_key&#x27;: this.appKey,
+            &#x27;room_id&#x27;: this._selectedRoom,
+            &#x27;user_id&#x27;: this._user.uid,
+            &#x27;peer_id&#x27;: this._socket.id,
+            &#x27;state&#x27;: state,
+            &#x27;error&#x27;: error || null,
+            &#x27;weight&#x27;: weight,
+            &#x27;sdp_type&#x27;: sdpType || null,
+            &#x27;sdp_sdp&#x27;: sdp || null
+        }
+    );
+};
+
+
+    </pre>
+</div>
+
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

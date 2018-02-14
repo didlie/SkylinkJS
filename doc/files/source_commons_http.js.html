@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>SkylinkJS 0.6.28</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- font and icon -->
+    <link rel="shortcut icon" type="image/ico" href="../assets/favicon.ico">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700|Source+Sans+Pro" type="text/css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700|Source+Code+Pro" type="text/css">
+    <!-- styling -->
+    <link rel="stylesheet" href="../assets/vendor/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/vendor/css/bootstrap-theme.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <!-- scripts -->
+    <script src="../assets/vendor/js/jquery.min.js"></script>
+    <script src="../assets/vendor/js/bootstrap.min.js"></script>
+    <script src="../assets/js/script.js"></script>
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body>
+
+<div id="doc">
+  <nav id="hd" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a href="" class="navbar-brand">
+          <img src="../assets/img/logo.svg" /><small>Version: 0.6.28</small>
+        </a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul id="api-list" class="nav navbar-nav navbar-right">
+  <li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Getting Started Examples <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+      <li><a href="https://temasys.io/getting-started-with-webrtc-and-skylinkjs/">Setting up a Video Call</a></li>
+      <li><a href="https://temasys.io/screensharing-with-skylinkjs/">Setting up Screensharing</a></li>
+      <li><a href="https://temasys.io/building-a-simple-peer-to-peer-webrtc-chat/">Setting up a Chatroom</a></li>
+    </ul>
+  </li>
+  
+    <li><a href="../classes/Skylink.html">Documentation</a></li>
+  
+  <!--<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Classes <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+      
+        <li><a href="../classes/Skylink.html">Skylink</a></li>
+      
+    </ul>
+  </li>-->
+  <li><a class="btn btn-info btn-navbar" href="https://console.temasys.io/">Developer Console</a></li>
+  <li><a class="btn btn-info btn-navbar" href="http://support.temasys.io/">Support</a></li>
+  <!--<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Modules <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+      <li><a href="#api-modules">View all Modules</a></li>
+      
+    </ul>
+  </li>-->
+</ul>
+<!--<form id="api-tabview" class="navbar-form navbar-right" role="form">
+  <div id="api-tabview-filter" class="form-group">
+    <input type="search" id="api-filter" placeholder="Type to filter APIs">
+  </div>
+</form>-->
+      </div><!--/.navbar-collapse -->
+    </div>
+  </nav>
+  <div id="bd" class="yui3-g">
+
+      <div class="yui3-u-1-4">
+
+      </div>
+      <div class="yui3-u-3-4">
+          
+          <div class="apidocs">
+              <div id="docs-main">
+                  <div class="content content-main">
+                      <h1 class="file-heading">File: source/commons/http.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/**
+ * HTTP Utils.
+ * @constructor
+ * @since 0.6.29
+ */
+var HTTP = {
+
+    /**
+     * It executes a post request.
+     *
+     * @method doPost
+     * @public
+     * @since 0.6.29
+     * @param {String} url Example: /api/stats
+     * @param {JSON} params Any object to be sent in the request as parameter
+     * @param {Function} Optional success callback function to be executed when the request succeed
+     * @param {Function} Optional error callback unction to be executed when there is an error in the request
+     */
+    doPost: function(url, params, successCb, errorCb) {
+        this._doHttpRequest(&#x27;POST&#x27;, url, params, successCb, errorCb);
+    },
+
+    /**
+     * It executes an HTTP request call.
+     *
+     * @method _doHttpRequest
+     * @private
+     * @since 0.6.29
+     * @param {String} method POST/GET/etc
+     * @param {String} url Example: /api/stats
+     * @param {JSON} params Any object to be sent in the request as parameter
+     * @param {Function} Optional success callback function to be executed when the request succeed
+     * @param {Function} Optional error callback unction to be executed when there is an error in the request
+     */
+    _doHttpRequest: function(method, url, params, successCb, errorCb) {
+        var xhr = this._createXMLHttpRequest();
+
+        xhr.onabort = xhr.onerror = function(error) {
+            console.log([null, &#x27;XMLHttpRequest&#x27;, &#x27;Failed XMLHttpRequest.&#x27;], error);
+
+            if(errorCb === &#x27;function&#x27;)
+                errorCb(error);
+        };
+
+        xhr.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                console.log(&quot;Statistics posted.&quot;, this.responseText);
+
+                if(successCb === &#x27;function&#x27;)
+                    successCb(this.responseText);
+            }
+        };
+
+        xhr.open(method, url, true);
+        xhr.setRequestHeader(&#x27;Content-type&#x27;, &#x27;application/json;charset=UTF-8&#x27;);
+
+        try {
+            var data = JSON.stringify(params);
+            console.log(&#x27;Sending statistics&#x27;, data);
+            xhr.send(data);
+        } catch(e) {
+            console.log([null, &#x27;XMLHttpRequest&#x27;, method, &#x27;Failed XMLHttpRequest.&#x27;], e);
+        }
+    },
+
+    /**
+     * It creates the XMLHttpRequest or XDomainRequest object.
+     *
+     * @method _createXMLHttpRequest
+     * @private
+     * @since 0.6.29
+     * @return {Boolean}
+     */
+    _createXMLHttpRequest: function() {
+        if(this._isXDomainRequestSupported())
+            return this._createXDomainRequest();
+        else
+            return new XMLHttpRequest();
+    },
+
+    /**
+     * It checks if XDomainRequest is supported in IE8 - 9 for CORS connection.
+     *
+     * @method _isXDomainRequestSupported
+     * @private
+     * @since 0.6.29
+     * @return {Boolean}
+     */
+    _isXDomainRequestSupported: function() {
+        return typeof window.XDomainRequest === &#x27;function&#x27; || typeof window.XDomainRequest === &#x27;object&#x27;;
+    },
+
+    /**
+     * It creates the XDomainRequest object.
+     *
+     * @method _createXDomainRequest
+     * @private
+     * @since 0.6.29
+     * @return {Boolean}
+     */
+    _createXDomainRequest: function() {
+        console.log(&#x27;Creating XDomainRequest.&#x27;);
+
+        var xDomainRequest = new XDomainRequest();
+        xDomainRequest.setContentType = function (contentType) {
+            xDomainRequest.contentType = contentType;
+        };
+
+        return xDomainRequest;
+    }
+
+};
+
+    </pre>
+</div>
+
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>
