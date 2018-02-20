@@ -56,7 +56,7 @@ var HTTP = {
 
         try {
             var data = JSON.stringify(params);
-            console.log('Sending statistics', data);
+            console.log('Sending statistics to ' + url, data);
             xhr.send(data);
         } catch(e) {
             console.log([null, 'XMLHttpRequest', method, 'Failed XMLHttpRequest.'], e);
