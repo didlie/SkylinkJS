@@ -1849,6 +1849,7 @@ Skylink.prototype._onStreamAccessSuccess = function(stream, settings, isScreenSh
   var streamId = stream.id || stream.label;
   var streamHasEnded = false;
 
+  this.sendPeerInfoStats(stream);
   log.log([null, 'MediaStream', streamId, 'Has access to stream ->'], stream);
 
   // Stop previous stream
