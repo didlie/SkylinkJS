@@ -940,6 +940,9 @@ Skylink.prototype._parseInfo = function(info) {
   this._readyState = this.READY_STATE_CHANGE.COMPLETED;
   this._trigger('readyStateChange', this.READY_STATE_CHANGE.COMPLETED, null, this._selectedRoom);
   log.info('Parsed parameters from webserver. Ready for web-realtime communication');
+
+  this.initStatsModule();
+  this.sendAuthInfoStats(info);
 };
 
 /**
