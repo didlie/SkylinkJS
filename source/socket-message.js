@@ -979,6 +979,9 @@ Skylink.prototype._enterHandler = function(message) {
     receiveOnly: message.receiveOnly === true,
     publishOnly: !!message.publishOnly
   };
+
+  this.sendNegotiationInfoStats('enter', message.weight);
+
   userInfo.parentId = message.parentId || null;
   userInfo.agent = {
     name: typeof message.agent === 'string' && message.agent ? message.agent : 'other',
@@ -1139,6 +1142,9 @@ Skylink.prototype._restartHandler = function(message){
     receiveOnly: message.receiveOnly === true,
     publishOnly: !!message.publishOnly
   };
+
+  this.sendNegotiationInfoStats('restart', message.weight);
+
   userInfo.parentId = message.parentId || null;
   userInfo.agent = {
     name: typeof message.agent === 'string' && message.agent ? message.agent : 'other',
@@ -1281,6 +1287,9 @@ Skylink.prototype._welcomeHandler = function(message) {
     receiveOnly: message.receiveOnly === true,
     publishOnly: !!message.publishOnly
   };
+
+  this.sendNegotiationInfoStats('welcome', message.weight);
+
   userInfo.parentId = message.parentId || null;
   userInfo.agent = {
     name: typeof message.agent === 'string' && message.agent ? message.agent : 'other',
@@ -1525,6 +1534,9 @@ Skylink.prototype._offerHandler = function(message) {
     self._trigger('handshakeProgress', self.HANDSHAKE_PROGRESS.OFFER, targetMid);
     self._addIceCandidateFromQueue(targetMid);
     self._doAnswer(targetMid);
+
+    debugger
+    this.sendNegotiationInfoStats('remote-offer', message.weight);
   };
 
   var onErrorCbFn = function(error) {
