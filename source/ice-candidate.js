@@ -32,6 +32,10 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
     if (candidateType === 'endOfCandidates' || !(self._peerConnections[targetMid] &&
       self._peerConnections[targetMid].localDescription && self._peerConnections[targetMid].localDescription.sdp &&
       self._peerConnections[targetMid].localDescription.sdp.indexOf('\r\na=mid:' + candidate.sdpMid + '\r\n') > -1)) {
+
+      var errorMsg = 'End of candidates signal or unused ICE candidates to prevent errors.';
+      self.sendIceCandidateAndSDPInfoStats(candidate, null, errorMsg);
+
       log.warn([targetMid, 'RTCIceCandidate', candidateType, 'Dropping of sending ICE candidate ' +
         'end-of-candidates signal or unused ICE candidates to prevent errors ->'], candidate);
       return;
@@ -39,6 +43,9 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
 
     if (self._initOptions.filterCandidatesType[candidateType]) {
       if (!(self._hasMCU && self._initOptions.forceTURN)) {
+        var errorMsg = 'Dropping of sending ICE candidate as it matches ICE candidate filtering flag.';
+        self.sendIceCandidateAndSDPInfoStats(candidate, null, errorMsg);
+
         log.warn([targetMid, 'RTCIceCandidate', candidateType, 'Dropping of sending ICE candidate as ' +
           'it matches ICE candidate filtering flag ->'], candidate);
         return;
@@ -63,12 +70,17 @@ Skylink.prototype._onIceCandidate = function(targetMid, candidate) {
     });
 
     if (!self._initOptions.enableIceTrickle) {
+      var errorMsg = 'Dropping of sending ICE candidate as it matches ICE candidate filtering flag.';
+      self.sendIceCandidateAndSDPInfoStats(candidate, null, errorMsg);
+
       log.warn([targetMid, 'RTCIceCandidate', candidateType, 'Dropping of sending ICE candidate as ' +
         'trickle ICE is disabled ->'], candidate);
       return;
     }
 
     log.debug([targetMid, 'RTCIceCandidate', candidateType, 'Sending ICE candidate ->'], candidate);
+
+    self.sendIceCandidateAndSDPInfoStats(candidate, null, null);
 
     self._sendChannelMessage({
       type: self._SIG_MESSAGE_TYPE.CANDIDATE,
@@ -147,6 +159,8 @@ Skylink.prototype._addIceCandidateToQueue = function(targetMid, canId, candidate
 
   this._peerCandidatesQueue[targetMid] = this._peerCandidatesQueue[targetMid] || [];
   this._peerCandidatesQueue[targetMid].push([canId, candidate]);
+
+  this.sendIceCandidateAndSDPInfoStats(candidate, 'buffered', null);
 };
 
 /**
@@ -206,6 +220,8 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
       sdpMid: candidate.sdpMid,
       sdpMLineIndex: candidate.sdpMLineIndex
     }, null);
+
+    self.sendIceCandidateAndSDPInfoStats(candidate, 'success', null);
   };
 
   var onErrorCbFn = function (error) {
@@ -217,6 +233,8 @@ Skylink.prototype._addIceCandidate = function (targetMid, canId, candidate) {
       sdpMid: candidate.sdpMid,
       sdpMLineIndex: candidate.sdpMLineIndex
     }, error);
+
+    self.sendIceCandidateAndSDPInfoStats(candidate, 'failed', error.toString());
   };
 
   log.debug([targetMid, 'RTCIceCandidate', canId + ':' + candidateType, 'Adding ICE candidate.']);
