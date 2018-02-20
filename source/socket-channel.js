@@ -301,6 +301,7 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
     retries++;
     self._socketSession.attempts++;
     self._trigger('channelRetry', fallbackType, self._socketSession.attempts, clone(self._socketSession));
+    self.sendClientSignalingInfoStats('reconnect_attempt');
   });
 
   socket.on('reconnect_failed', function () {
@@ -318,6 +319,8 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
       self._trigger('socketError', self.SOCKET_ERROR.RECONNECTION_ABORTED, new Error('Reconnection aborted as ' +
         'there no more available ports, transports and final attempts left.'), fallbackType, clone(self._socketSession));
     }
+
+    self.sendClientSignalingInfoStats('reconnect_failed');
   });
 
   socket.on('connect', function () {
@@ -326,6 +329,8 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
       self._channelOpen = true;
       self._trigger('channelOpen', clone(self._socketSession));
     }
+
+    self.sendClientSignalingInfoStats('connect');
   });
 
   socket.on('reconnect', function () {
@@ -334,6 +339,8 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
       self._channelOpen = true;
       self._trigger('channelOpen', clone(self._socketSession));
     }
+
+    self.sendClientSignalingInfoStats('reconnect');
   });
 
   socket.on('error', function(error) {
@@ -344,6 +351,8 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
     }
     log.error([null, 'Socket', null, 'Exception occurred ->'], error);
     self._trigger('channelError', error, clone(self._socketSession));
+
+    self.sendClientSignalingInfoStats('error');
   });
 
   socket.on('disconnect', function() {
@@ -355,6 +364,7 @@ Skylink.prototype._createSocket = function (type, joinRoomTimestamp) {
       if (self._inRoom && self._user && self._user.sid) {
         self.leaveRoom(false);
         self._trigger('sessionDisconnect', self._user.sid, self.getPeerInfo());
+        self.sendClientSignalingInfoStats('disconnect');
       }
     }
   });
