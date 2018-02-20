@@ -462,6 +462,12 @@ Skylink.prototype.init = function(_options, _callback) {
   // `init({ socketTimeout: 20000 })`
   options.socketTimeout = typeof options.socketTimeout === 'number' && options.socketTimeout >= 5000 ? options.socketTimeout : 7000;
 
+  // `init({ enableStats: true })`
+  options.enableStats = options.enableStats !== false;
+
+  // `init({ statsURL: "//server.temasys.io" })`
+  options.statsURL = options.statsURL && typeof options.statsURL === 'string' ? options.statsURL : '//api.temasys.io';
+
   // `init({ socketTimeout: 4000 })`
   options.apiTimeout = typeof options.apiTimeout === 'number' ? options.apiTimeout : 4000;
 
