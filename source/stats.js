@@ -41,8 +41,9 @@ Skylink.prototype._buildStatsURL = function(endPoint) {
  */
 Skylink.prototype._sendStatsInfo = function(endpoint, data) {
     try {
-        if(!this._initOptions.enableStats)
+        if(!this._initOptions.enableStats) {
             return;
+        }
 
         HTTP.doPost(this._buildStatsURL(endpoint), data);
     } catch(error) {
@@ -68,8 +69,7 @@ Skylink.prototype._createClientIDStats = function() {
 /**
  * It initializes the Stats module.
  * It creates a client_id.
- * This function has to be called when the room inits. During the second call Skylink will get
- * the appKeyOwner. In the first call the client_id will be a 'dummy' one.
+ * This function has to be called when the room inits.
  *
  * @method initStatsModule
  * @public
@@ -78,6 +78,73 @@ Skylink.prototype._createClientIDStats = function() {
  */
 Skylink.prototype.initStatsModule = function() {
     this._clientIDStats = this._createClientIDStats();
+};
+
+/**
+ * It sends the peer stats information.
+ *
+ * @method sendPeerInfoStats
+ * @public
+ * @since 0.6.29
+ * @param {MediaStream} WebRTC media stream.
+ */
+Skylink.prototype.sendPeerInfoStats = function(mediaStream) {
+    // It builds the AudioMedia object from the WebRTC media stream.
+    var audioMedia = [];
+    var audioTracks = mediaStream.getAudioTracks();
+
+    try {
+        for(var i = 0; i < audioTracks.length; i++) {
+            audioMedia.push({
+                'id': audioTracks[i].id || null,
+                'stream_id': mediaStream.id|| null,
+            });
+        }
+    } catch(error) {
+        audioMedia = [];
+    }
+
+    // It builds the VideoMedia object.
+    var videoMedia = [];
+    var videoTracks = mediaStream.getVideoTracks();
+
+    try {
+        for(var i = 0; i < videoTracks.length; i++) {
+            videoMedia.push({
+                'id': videoTracks[i].id || null,
+                'stream_id': mediaStream.id|| null,
+                'resolution_width': videoTracks[i].resolution_width || null,
+                'resolution_height': videoTracks[i].resolution_height || null
+            });
+        }
+    } catch (error) {
+        videoMedia = [];
+    }
+
+    // It builds the entire object.
+    var data = {
+        'client_id': this._clientIDStats,
+        'app_key': this._initOptions.appKey,
+        'timestamp': new Date().toISOString(),
+        'username': this._user.info.username || null,
+        'sdk': {
+            'name': this.SDK_TYPE,
+            'version': this.VERSION
+        },
+        'agent': {
+            'name': AdapterJS.webrtcDetectedBrowser,
+            'version': AdapterJS.webrtcDetectedVersion || 0,
+            'platform': navigator.platform,
+            'platform': window.navigator.platform || null,
+            'plugin_version': AdapterJS.WebRTCPlugin.plugin ? AdapterJS.WebRTCPlugin.plugin.VERSION : null
+        },
+        'media': {
+            'audio': audioMedia,
+            'video': videoMedia
+        }
+    };
+
+    this._sendStatsInfo(this._statsEndpoints.client, data);
 };
 
 /**
@@ -94,6 +161,7 @@ Skylink.prototype.sendAuthInfoStats = function(apiResult) {
         {
             'client_id': this._clientIDStats,
             'app_key': this._initOptions.appKey,
+            'room_id': this._selectedRoom,
             'timestamp': new Date().toISOString(),
             'api_url': this._initOptions.statsURL,
             'api_result': JSON.stringify(apiResult)
@@ -107,7 +175,7 @@ Skylink.prototype.sendAuthInfoStats = function(apiResult) {
  * @method sendClientSignalingInfoStats
  * @public
  * @since 0.6.29
- * @param {String}
+ * @param {String} The current signaling state.
  */
 Skylink.prototype.sendClientSignalingInfoStats = function(currentState) {
     this._sendStatsInfo(
@@ -116,77 +184,15 @@ Skylink.prototype.sendClientSignalingInfoStats = function(currentState) {
             'client_id': this._clientIDStats,
             'app_key': this._initOptions.appKey,
             'timestamp': new Date().toISOString(),
-            'room_id': this._initOptions.defaultRoom,
+            'room_id': this._selectedRoom,
             'state': currentState,
+            'protocol': this._signalingServerProtocol,
             'server': this._signalingServer,
             'port': this._signalingServerPort,
             'transport': this._socketSession.transportType,
             'attempts': this._socketSession.attempts
         }
     );
-};
-
-
-/**
- * It sends the peer stats information.
- *
- * @method sendPeerInfoStats
- * @public
- * @since 0.6.29
- * @param {MediaStream} WebRTC media stream.
- */
-Skylink.prototype.sendPeerInfoStats = function(mediaStream) {
-    // It builds the AudioMedia object.
-    var audioMedia = [];
-
-    try {
-        for(var i = 0; i < audioTracks.length; i++)
-            audioMedia.push({
-                'id': audioTracks[i].id || null,
-                'stream_id': audioTracks[i].stream_id || null
-            });
-    } catch(error) {
-        audioMedia = [];
-    }
-
-    // It builds the VideoMedia object.
-    var videoMedia = [];
-
-    try {
-        for(var i = 0; i < videoTracks.length; i++)
-            videoMedia.push({
-                'id': videoTracks[i].id || null,
-                'stream_id': videoTracks[i].stream_id || null,
-                'resolution_width': videoTracks[i].resolution_width || null,
-                'resolution_height': videoTracks[i].resolution_height || null
-            });
-    } catch (error) {
-        videoMedia = [];
-    }
-
-    // It builds the entire object.
-    var data = {
-        'client_id': this._clientIDStats,
-        'app_key': this.appKey,
-        'timestamp': new Date().toISOString(),
-        'sdk': {
-            'name': this.SDK_TYPE,
-            'version': this.VERSION
-        },
-        'agent': {
-            'platform': navigator.platform,
-            'name': AdapterJS.webrtcDetectedBrowser,
-            'version': AdapterJS.webrtcDetectedVersion || 0,
-            'platform': window.navigator.platform || null,
-            'pluginVersion': AdapterJS.WebRTCPlugin.plugin ? AdapterJS.WebRTCPlugin.plugin.VERSION : null
-        },
-        'media': {
-            'audio': audioMedia,
-            'video': videoMedia
-        }
-    };
-
-    this._sendStatsInfo(this._statsEndpoints.client, data);
 };
 
 /**
@@ -201,45 +207,46 @@ Skylink.prototype.sendPeerInfoStats = function(mediaStream) {
  */
 Skylink.prototype.sendIceAgentInfo = function(options) {
     var self = this;
-    var rtcStatsReport;
+    var rtcStatsReportTmp;
 
     options.statsPromise
     .then(function(_rtcStatsReport) {
         var localCandidates = [];
         var remoteCandidates = [];
         var state = options.state;
+        var rtcStatsReportTmp = _rtcStatsReport;
 
-        rtcStatsReport = _rtcStatsReport;
+        rtcStatsReportTmp.forEach(function(entry) {
 
-        rtcStatsReport.forEach(function(entry) {
             if(entry.id.indexOf('RTCIceCandidatePair') >= 0) {
-                console.log(entry)
-                // Temporal and explanatory variables.
-                var localCandidateEntry = rtcStatsReport.get(entry.localCandidateId);
-                var remoteCandidateEntry = rtcStatsReport.get(entry.remoteCandidateId);
 
-                // Temporal and explanatory variables.
+                // Temporal and explanatory variable: candidate entries.
+                var localCandidateEntry = rtcStatsReportTmp.get(entry.localCandidateId);
+                var remoteCandidateEntry = rtcStatsReportTmp.get(entry.remoteCandidateId);
+
+                // Temporal and explanatory variables: candidate info.
                 var localCandidateInfo = self._buildCandidateInfoForIceAgentState(localCandidateEntry);
                 var remoteCandidateInfo = self._buildCandidateInfoForIceAgentState(remoteCandidateEntry);
 
-                if(localCandidateInfo)
-                    localCandidates.push(localCandidateInfo)
+                if(localCandidateInfo) {
+                    localCandidates.push(localCandidateInfo);
+                }
 
-                if(remoteCandidateInfo)
-                    remoteCandidates.push(remoteCandidateInfo)
+                if(remoteCandidateInfo) {
+                    remoteCandidates.push(remoteCandidateInfo);
+                }
             }
-        }.bind(this));
+        });
 
-        debugger;
-        this._sendStatsInfo(
-            this._statsEndpoints.iceconnection,
+        self._sendStatsInfo(
+            self._statsEndpoints.iceconnection,
             {
-                'client_id': this._clientIDStats,
-                'app_key': this.appKey,
-                'room_id': this._selectedRoom,
+                'client_id': self._clientIDStats,
+                'app_key': self._initOptions.appKey,
+                'room_id': self._selectedRoom,
                 'timestamp': new Date().toISOString(),
-                'user_id': this._user.uid,
-                'peer_id': this._socket.id,
+                'user_id': self._user.uid,
+                'peer_id': self._socket.id,
                 'state': options.state,
                 'is_trickle': self._initOptions.enableIceTrickle,
                 'local_candidate': JSON.stringify(localCandidates),
@@ -247,10 +254,13 @@ Skylink.prototype.sendIceAgentInfo = function(options) {
             }
         );
     })
+    .catch(function(error) {
+        console.log(error);
+    });
 };
 
 /**
- * It builds the candidate informationb object.
+ * It builds the candidate information object.
  *
  * @method _buildCandidateInfoForIceAgentState
  * @private
@@ -259,15 +269,16 @@ Skylink.prototype.sendIceAgentInfo = function(options) {
  * @return {JSON}
  */
 Skylink.prototype._buildCandidateInfoForIceAgentState = function(candidate) {
-    if(candidate)
+    if(candidate) {
         return {
             address: candidate.ip,
             port: candidate.port,
             candidateType: candidate.candidateType,
             network_type: candidate.networkType || null,
-            transport: candidate.transportId,
+            transport: candidate.protocol,
             priority: candidate.priority
         }
+    }
 };
 
 /**
@@ -285,7 +296,7 @@ Skylink.prototype.sendIceCandidateAndSDPInfoStats = function(candidate, state, e
         this._statsEndpoints.icecandidate,
         {
             'client_id': this._clientIDStats,
-            'app_key': this.appKey,
+            'app_key': this._initOptions.appKey,
             'room_id': this._selectedRoom,
             'timestamp': new Date().toISOString(),
             'user_id': this._user.uid,
@@ -306,23 +317,25 @@ Skylink.prototype.sendIceCandidateAndSDPInfoStats = function(candidate, state, e
  * @method sendNegotiationInfoStats
  * @public
  * @since 0.6.29
- * @param {String}
- * @param {String}
- * @param {String}
- * @param {String}
- * @param {String}
+ * @param {String} Negotiation State.
+ * @param {String} Weight given when enter the room.
+ * @param {String} SDP
+ * @param {String} SDP Type
+ * @param {String} Error
  */
-Skylink.prototype.sendNegotiationInfoStats = function(state, weight, sdp, sdpType, error) {
+Skylink.prototype.sendNegotiationInfoStats = function(state, weight, sdp, sdpType, errorStr) {
+    debugger;
     this._sendStatsInfo(
         this._statsEndpoints.negotiation,
         {
             'client_id': this._clientIDStats,
-            'app_key': this.appKey,
+            'app_key': this._initOptions.appKey,
             'room_id': this._selectedRoom,
+            'timestamp': new Date().toISOString(),
             'user_id': this._user.uid,
             'peer_id': this._socket.id,
             'state': state,
-            'error': error || null,
+            'error': errorStr || null,
             'weight': weight,
             'sdp_type': sdpType || null,
             'sdp_sdp': sdp || null
