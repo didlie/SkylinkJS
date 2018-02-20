@@ -65,6 +65,8 @@ Skylink.prototype._doOffer = function(targetMid, iceRestart) {
   var onErrorCbFn = function(error) {
     self._trigger('handshakeProgress', self.HANDSHAKE_PROGRESS.ERROR, targetMid, error);
     log.error([targetMid, null, null, 'Failed creating an offer:'], error);
+
+    self.sendNegotiationInfoStats('error-create-offer', self._peerPriorityWeight, null, null, error.message);
   };
 
   pc.createOffer(onSuccessCbFn, onErrorCbFn, AdapterJS.webrtcDetectedType === 'plugin' ? {
@@ -131,6 +133,8 @@ Skylink.prototype._doAnswer = function(targetMid) {
   var onErrorCbFn = function(error) {
     log.error([targetMid, null, null, 'Failed creating an answer:'], error);
     self._trigger('handshakeProgress', self.HANDSHAKE_PROGRESS.ERROR, targetMid, error);
+
+    self.sendNegotiationInfoStats('error-create-answer', self._peerPriorityWeight, null, null, error.message);
   };
 
   // No ICE restart constraints for createAnswer as it fails in chrome 48
@@ -215,8 +219,10 @@ Skylink.prototype._setLocalAndSendMessage = function(targetMid, _sessionDescript
 
     if (sessionDescription.type === self.HANDSHAKE_PROGRESS.ANSWER) {
       pc.setAnswer = 'local';
+      self.sendNegotiationInfoStats('local-answer', self._peerPriorityWeight, sessionDescription.sdp, sessionDescription.type);
     } else {
       pc.setOffer = 'local';
+      self.sendNegotiationInfoStats('local-offer', self._peerPriorityWeight, sessionDescription.sdp, sessionDescription.type);
     }
 
     if (!self._initOptions.enableIceTrickle && !pc.gathered) {
@@ -241,6 +247,12 @@ Skylink.prototype._setLocalAndSendMessage = function(targetMid, _sessionDescript
     pc.processingLocalSDP = false;
 
     self._trigger('handshakeProgress', self.HANDSHAKE_PROGRESS.ERROR, targetMid, error);
+
+    if(sessionDescription.type == self.HANDSHAKE_PROGRESS.OFFER) {
+      self.sendNegotiationInfoStats('error-local-offer', self._peerPriorityWeight, sessionDescription.sdp, sessionDescription.type, error.message);
+    } else if(sessionDescription.type == self.HANDSHAKE_PROGRESS.ANSWER) {
+      self.sendNegotiationInfoStats('error-local-answer', self._peerPriorityWeight, sessionDescription.sdp, sessionDescription.type, error.message);
+    }
   };
 
   pc.setLocalDescription(new RTCSessionDescription(sessionDescription), onSuccessCbFn, onErrorCbFn);
