@@ -14,13 +14,13 @@ Skylink.prototype._statsEndpoints = {
 };
 
 /**
- * It builds a URL concatenating statsURL, which was set at the configuration file, plus BASE_URL
- * and the correspoiding endpoint.
+ * It builds a URL concatenating statsURL, which was set at the configuration file, plus /rest/stas/
+ * and the corresponding endpoint.
  *
  * @method _buildStatsURL
  * @private
  * @since 0.6.29
- * @param {String} endPoint Example: /api/stats
+ * @param {String} endPoint Example: /client/recording
  * @return {String} The url with https://xxx.xxx.xxx./api/rest/stats/client'
  */
 Skylink.prototype._buildStatsURL = function(endPoint) {
@@ -28,16 +28,13 @@ Skylink.prototype._buildStatsURL = function(endPoint) {
 };
 
 /**
- * It builds the data for the given params.
- * It fetches the endpoint from the concrete classes.
- * It sends the information to the stats server.
+ * It sends the information to the stats server executing a POST call.
  *
  * @private
  * @method _sendStatsInfo
  * @since 0.6.29
  * @param {String} Service endpoint chunk URL E.g. client/signaling.
- * @param {JSON} Any data that wants to be sent to the stats server. It will be
- * Stringified in the HTTP service class.
+ * @param {JSON} Any data to be sent to the stats server. It will be
  */
 Skylink.prototype._sendStatsInfo = function(endpoint, data) {
     try {
@@ -53,9 +50,6 @@ Skylink.prototype._sendStatsInfo = function(endpoint, data) {
 
 /**
  * It creates the client id concatenating (this.appKeyOwner || 'dummy') _ + Date.now() + a random number.
- * The why of the dummy data is because the skilink.init() is executed twice. During the first
- * execution it does not retrive the apiKeyOwner; however, in the second execution it retrieves
- * the API owner.
  *
  * @method _createClientIdStats
  * @private
@@ -67,7 +61,7 @@ Skylink.prototype._createClientIdStats = function() {
 };
 
 /**
- * It sends the peer stats information.
+ * It sends the peer information to the stats server.
  *
  * @method sendPeerInfoStats
  * @public
@@ -112,7 +106,7 @@ Skylink.prototype.sendPeerInfoStats = function(mediaStream) {
         'client_id': this._clientIdStats,
         'app_key': this._initOptions.appKey,
         'timestamp': new Date().toISOString(),
-        'username': this._user.info.username || null,
+        'username': this._appKeyOwner,
         'sdk': {
             'name': this.SDK_TYPE,
             'version': this.VERSION
@@ -136,7 +130,7 @@ Skylink.prototype.sendPeerInfoStats = function(mediaStream) {
 };
 
 /**
- * It sends the authentication stats information.
+ * It sends the authentication information to the stats server.
  *
  * @method sendAuthInfoStats
  * @public
@@ -159,7 +153,7 @@ Skylink.prototype.sendAuthInfoStats = function(apiResult) {
 };
 
 /**
- * It sends the client signalling stats information.
+ * It sends the client signaling information to the stats server.
  *
  * @method sendClientSignalingInfoStats
  * @public
@@ -186,9 +180,9 @@ Skylink.prototype.sendClientSignalingInfoStats = function(currentState) {
 };
 
 /**
- * It sends ICE Agent state information.
+ * It sends ICE Agent state information to the stats server.
  * It gather the peerConnection.getStats() and the change of state
- * in the method.
+ * in the WebRTC agent.
  *
  * @method sendIceAgentInfo
  * @public
@@ -229,6 +223,12 @@ Skylink.prototype.sendIceAgentInfo = function(options) {
             }
         });
 
+        return {
+            localCandidates: localCandidates,
+            remoteCandidates: remoteCandidates
+        };
+    })
+    .then(function(result) {
         var data = {
             'client_id': self._clientIdStats,
             'app_key': self._initOptions.appKey,
@@ -238,8 +238,8 @@ Skylink.prototype.sendIceAgentInfo = function(options) {
             'peer_id': self._socket.id,
             'state': options.state,
             'is_trickle': self._initOptions.enableIceTrickle,
-            'local_candidate': JSON.stringify(localCandidates),
-            'remote_candidate': JSON.stringify(remoteCandidates)
+            'local_candidate': JSON.stringify(result.localCandidates),
+            'remote_candidate': JSON.stringify(result.remoteCandidates)
         };
 
         log.info('Sending ICE agent info stats to endpoint: ' + self._statsEndpoints.iceconnection, data);
@@ -273,7 +273,7 @@ Skylink.prototype._buildCandidateInfoForIceAgentState = function(candidate) {
 };
 
 /**
- * It sends the peer stats information.
+ * It sends the peer ICE candidate information to the stats server.
  *
  * @method sendIceCandidateAndSDPInfoStats
  * @public
@@ -304,7 +304,7 @@ Skylink.prototype.sendIceCandidateAndSDPInfoStats = function(candidate, state, e
 };
 
  /**
- * It sends peer negotiation status information.
+ * It sends peer negotiation status information to the stats server.
  *
  * @method sendNegotiationInfoStats
  * @public
@@ -313,7 +313,7 @@ Skylink.prototype.sendIceCandidateAndSDPInfoStats = function(candidate, state, e
  * @param {String} Weight given when enter the room.
  * @param {String} SDP
  * @param {String} SDP Type
- * @param {String} Error
+ * @param {String} Error message
  */
 Skylink.prototype.sendNegotiationInfoStats = function(state, weight, sdp, sdpType, errorStr) {
     var data = {

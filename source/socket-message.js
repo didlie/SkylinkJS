@@ -1143,7 +1143,8 @@ Skylink.prototype._restartHandler = function(message){
     publishOnly: !!message.publishOnly
   };
 
-  this.sendNegotiationInfoStats('restart', message.weight);
+  var localSDP = this._peerConnections[targetMid].localDescription;
+  this.sendNegotiationInfoStats('restart', message.weight, localSDP.sdp, localSDP.type);
 
   userInfo.parentId = message.parentId || null;
   userInfo.agent = {
@@ -1535,7 +1536,8 @@ Skylink.prototype._offerHandler = function(message) {
     self._addIceCandidateFromQueue(targetMid);
     self._doAnswer(targetMid);
 
-    self.sendNegotiationInfoStats('remote-offer', self._peerPriorityWeight);
+    var remoteSDP = self._peerConnections[targetMid].remoteDescription;
+    self.sendNegotiationInfoStats('remote-offer', self._peerPriorityWeight, remoteSDP.sdp, remoteSDP.type);
   };
 
   var onErrorCbFn = function(error) {
@@ -1548,6 +1550,8 @@ Skylink.prototype._offerHandler = function(message) {
       state: pc.signalingState,
       offer: offer
     });
+
+    self.sendNegotiationInfoStats('error-remote-offer', self._peerPriorityWeight, offer.sdp, offer.type, error.message);
   };
 
   pc.setRemoteDescription(new RTCSessionDescription(offer), onSuccessCbFn, onErrorCbFn);
@@ -1742,6 +1746,10 @@ Skylink.prototype._answerHandler = function(message) {
 
   var onSuccessCbFn = function() {
     log.debug([targetMid, null, message.type, 'Remote description set']);
+
+    var remoteSDP = self._peerConnections[targetMid].remoteDescription;
+    self.sendNegotiationInfoStats('remote-answer', self._peerPriorityWeight, remoteSDP.sdp, remoteSDP.type);
+
     pc.setAnswer = 'remote';
     pc.processingRemoteSDP = false;
 
@@ -1769,6 +1777,9 @@ Skylink.prototype._answerHandler = function(message) {
       state: pc.signalingState,
       answer: answer
     });
+
+    var remoteSDP = self._peerConnections[targetMid].remoteDescription;
+    self.sendNegotiationInfoStats('error-remote-answer', self._peerPriorityWeight, remoteSDP.sdp, remoteSDP.type);
   };
 
   pc.setRemoteDescription(new RTCSessionDescription(answer), onSuccessCbFn, onErrorCbFn);

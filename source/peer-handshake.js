@@ -58,14 +58,13 @@ Skylink.prototype._doOffer = function(targetMid, iceRestart) {
   var onSuccessCbFn = function(offer) {
     log.debug([targetMid, null, null, 'Created offer'], offer);
     self._setLocalAndSendMessage(targetMid, offer);
-
-    self.sendNegotiationInfoStats('local-offer', self._peerPriorityWeight, offer.sdp, offer.type);
   };
 
   var onErrorCbFn = function(error) {
     self._trigger('handshakeProgress', self.HANDSHAKE_PROGRESS.ERROR, targetMid, error);
     log.error([targetMid, null, null, 'Failed creating an offer:'], error);
 
+    // If offer fails, SDP is empty.
     self.sendNegotiationInfoStats('error-create-offer', self._peerPriorityWeight, null, null, error.message);
   };
 
@@ -134,6 +133,7 @@ Skylink.prototype._doAnswer = function(targetMid) {
     log.error([targetMid, null, null, 'Failed creating an answer:'], error);
     self._trigger('handshakeProgress', self.HANDSHAKE_PROGRESS.ERROR, targetMid, error);
 
+    // If offer fails, SDP is empty.
     self.sendNegotiationInfoStats('error-create-answer', self._peerPriorityWeight, null, null, error.message);
   };
 
