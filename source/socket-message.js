@@ -1535,7 +1535,7 @@ Skylink.prototype._offerHandler = function(message) {
     self._addIceCandidateFromQueue(targetMid);
     self._doAnswer(targetMid);
 
-    this.sendNegotiationInfoStats('remote-offer', self._peerPriorityWeight);
+    self.sendNegotiationInfoStats('remote-offer', self._peerPriorityWeight);
   };
 
   var onErrorCbFn = function(error) {

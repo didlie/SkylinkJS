@@ -44,7 +44,6 @@ var HTTP = {
 
         xhr.onreadystatechange = function() {
             if (this.readyState == 4) {
-                console.log("Statistics posted.", this.responseText);
 
                 if(successCb === 'function')
                     successCb(this.responseText);
@@ -56,7 +55,6 @@ var HTTP = {
 
         try {
             var data = JSON.stringify(params);
-            console.log('Sending statistics to ' + url, data);
             xhr.send(data);
         } catch(e) {
             console.log([null, 'XMLHttpRequest', method, 'Failed XMLHttpRequest.'], e);

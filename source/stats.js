@@ -47,7 +47,7 @@ Skylink.prototype._sendStatsInfo = function(endpoint, data) {
 
         HTTP.doPost(this._buildStatsURL(endpoint), data);
     } catch(error) {
-        console.log('Statistics module failed sending datas.', error);
+        log.error('Statistics module failed sending datas.', error);
     }
 };
 
@@ -57,27 +57,13 @@ Skylink.prototype._sendStatsInfo = function(endpoint, data) {
  * execution it does not retrive the apiKeyOwner; however, in the second execution it retrieves
  * the API owner.
  *
- * @method _createClientIDStats
+ * @method _createClientIdStats
  * @private
  * @since 0.6.29
  * @return {String} Client id
  */
-Skylink.prototype._createClientIDStats = function() {
+Skylink.prototype._createClientIdStats = function() {
     return (this._appKeyOwner  || 'dummy') + '_' + (Date.now() + Math.floor(Math.random() * 1000000));
-};
-
-/**
- * It initializes the Stats module.
- * It creates a client_id.
- * This function has to be called when the room inits.
- *
- * @method initStatsModule
- * @public
- * @since 0.6.29
- * @param {JSON} Response from the XMLHTTPRequest for either success or error.
- */
-Skylink.prototype.initStatsModule = function() {
-    this._clientIDStats = this._createClientIDStats();
 };
 
 /**
@@ -123,7 +109,7 @@ Skylink.prototype.sendPeerInfoStats = function(mediaStream) {
 
     // It builds the entire object.
     var data = {
-        'client_id': this._clientIDStats,
+        'client_id': this._clientIdStats,
         'app_key': this._initOptions.appKey,
         'timestamp': new Date().toISOString(),
         'username': this._user.info.username || null,
@@ -144,6 +130,8 @@ Skylink.prototype.sendPeerInfoStats = function(mediaStream) {
         }
     };
 
+    log.info(['Sending Peer info stats to endpoint: ' + this._statsEndpoints.client], data);
+
     this._sendStatsInfo(this._statsEndpoints.client, data);
 };
 
@@ -156,17 +144,18 @@ Skylink.prototype.sendPeerInfoStats = function(mediaStream) {
  * @param {JSON} Response from the XMLHTTPRequest for either success or error.
  */
 Skylink.prototype.sendAuthInfoStats = function(apiResult) {
-    this._sendStatsInfo(
-        this._statsEndpoints.auth,
-        {
-            'client_id': this._clientIDStats,
-            'app_key': this._initOptions.appKey,
-            'room_id': this._selectedRoom,
-            'timestamp': new Date().toISOString(),
-            'api_url': this._initOptions.statsURL,
-            'api_result': JSON.stringify(apiResult)
-        }
-    );
+    var data = {
+        'client_id': this._clientIdStats,
+        'app_key': this._initOptions.appKey,
+        'room_id': this._selectedRoom,
+        'timestamp': new Date().toISOString(),
+        'api_url': this._initOptions.statsURL,
+        'api_result': JSON.stringify(apiResult)
+    };
+
+    log.info('Sending Auth info stats to endpoint: ' + this._statsEndpoints.auth, data);
+
+    this._sendStatsInfo(this._statsEndpoints.auth, data);
 };
 
 /**
@@ -178,21 +167,22 @@ Skylink.prototype.sendAuthInfoStats = function(apiResult) {
  * @param {String} The current signaling state.
  */
 Skylink.prototype.sendClientSignalingInfoStats = function(currentState) {
-    this._sendStatsInfo(
-        this._statsEndpoints.clientSignaling,
-        {
-            'client_id': this._clientIDStats,
-            'app_key': this._initOptions.appKey,
-            'timestamp': new Date().toISOString(),
-            'room_id': this._selectedRoom,
-            'state': currentState,
-            'protocol': this._signalingServerProtocol,
-            'server': this._signalingServer,
-            'port': this._signalingServerPort,
-            'transport': this._socketSession.transportType,
-            'attempts': this._socketSession.attempts
-        }
-    );
+    var data = {
+        'client_id': this._clientIdStats,
+        'app_key': this._initOptions.appKey,
+        'timestamp': new Date().toISOString(),
+        'room_id': this._selectedRoom,
+        'state': currentState,
+        'protocol': this._signalingServerProtocol,
+        'server': this._signalingServer,
+        'port': this._signalingServerPort,
+        'transport': this._socketSession.transportType,
+        'attempts': this._socketSession.attempts
+    };
+
+    log.info('Sending client Signaling info stats to endpoint: ' + this._statsEndpoints.clientSignaling, data);
+
+    this._sendStatsInfo(this._statsEndpoints.clientSignaling, data);
 };
 
 /**
@@ -228,6 +218,7 @@ Skylink.prototype.sendIceAgentInfo = function(options) {
                 var localCandidateInfo = self._buildCandidateInfoForIceAgentState(localCandidateEntry);
                 var remoteCandidateInfo = self._buildCandidateInfoForIceAgentState(remoteCandidateEntry);
 
+                // If there are candidates info, we add to the array of local or remote candidates.
                 if(localCandidateInfo) {
                     localCandidates.push(localCandidateInfo);
                 }
@@ -238,21 +229,21 @@ Skylink.prototype.sendIceAgentInfo = function(options) {
             }
         });
 
-        self._sendStatsInfo(
-            self._statsEndpoints.iceconnection,
-            {
-                'client_id': self._clientIDStats,
-                'app_key': self._initOptions.appKey,
-                'room_id': self._selectedRoom,
-                'timestamp': new Date().toISOString(),
-                'user_id': self._user.uid,
-                'peer_id': self._socket.id,
-                'state': options.state,
-                'is_trickle': self._initOptions.enableIceTrickle,
-                'local_candidate': JSON.stringify(localCandidates),
-                'remote_candidate': JSON.stringify(remoteCandidates)
-            }
-        );
+        var data = {
+            'client_id': self._clientIdStats,
+            'app_key': self._initOptions.appKey,
+            'room_id': self._selectedRoom,
+            'timestamp': new Date().toISOString(),
+            'user_id': self._user.uid,
+            'peer_id': self._socket.id,
+            'state': options.state,
+            'is_trickle': self._initOptions.enableIceTrickle,
+            'local_candidate': JSON.stringify(localCandidates),
+            'remote_candidate': JSON.stringify(remoteCandidates)
+        };
+
+        log.info('Sending ICE agent info stats to endpoint: ' + self._statsEndpoints.iceconnection, data);
+        self._sendStatsInfo(self._statsEndpoints.iceconnection, data);
     })
     .catch(function(error) {
         console.log(error);
@@ -292,23 +283,24 @@ Skylink.prototype._buildCandidateInfoForIceAgentState = function(candidate) {
  * @param {String}
  */
 Skylink.prototype.sendIceCandidateAndSDPInfoStats = function(candidate, state, errorMsg) {
-    this._sendStatsInfo(
-        this._statsEndpoints.icecandidate,
-        {
-            'client_id': this._clientIDStats,
-            'app_key': this._initOptions.appKey,
-            'room_id': this._selectedRoom,
-            'timestamp': new Date().toISOString(),
-            'user_id': this._user.uid,
-            'peer_id': this._socket.id,
-            'candidate_id': candidate.type + '_' + (new Date()).getTime(),
-            'state': state,
-            'sdpMid': candidate.sdpMid,
-            'sdpMLineIndex': candidate.sdpMLineIndex,
-            'candidate': JSON.stringify(candidate),
-            'error': errorMsg || null
-        }
-    );
+    var data = {
+        'client_id': this._clientIdStats,
+        'app_key': this._initOptions.appKey,
+        'room_id': this._selectedRoom,
+        'timestamp': new Date().toISOString(),
+        'user_id': this._user.uid,
+        'peer_id': this._socket.id,
+        'candidate_id': candidate.type + '_' + (new Date()).getTime(),
+        'state': state,
+        'sdpMid': candidate.sdpMid,
+        'sdpMLineIndex': candidate.sdpMLineIndex,
+        'candidate': JSON.stringify(candidate),
+        'error': errorMsg || null
+    };
+
+    log.info('Sending ICE candidate info stats to endpoint: ' + this._statsEndpoints.icecandidate, data);
+
+    this._sendStatsInfo(this._statsEndpoints.icecandidate, data);
 };
 
  /**
@@ -324,22 +316,22 @@ Skylink.prototype.sendIceCandidateAndSDPInfoStats = function(candidate, state, e
  * @param {String} Error
  */
 Skylink.prototype.sendNegotiationInfoStats = function(state, weight, sdp, sdpType, errorStr) {
-    debugger;
-    this._sendStatsInfo(
-        this._statsEndpoints.negotiation,
-        {
-            'client_id': this._clientIDStats,
-            'app_key': this._initOptions.appKey,
-            'room_id': this._selectedRoom,
-            'timestamp': new Date().toISOString(),
-            'user_id': this._user.uid,
-            'peer_id': this._socket.id,
-            'state': state,
-            'error': errorStr || null,
-            'weight': weight,
-            'sdp_type': sdpType || null,
-            'sdp_sdp': sdp || null
-        }
-    );
+    var data = {
+        'client_id': this._clientIdStats,
+        'app_key': this._initOptions.appKey,
+        'room_id': this._selectedRoom,
+        'timestamp': new Date().toISOString(),
+        'user_id': this._user.uid,
+        'peer_id': this._socket.id,
+        'state': state,
+        'error': errorStr || null,
+        'weight': weight,
+        'sdp_type': sdpType || null,
+        'sdp_sdp': sdp || null
+    };
+
+    log.info('Sending negotiation info stats to endpoint: ' + this._statsEndpoints.negotiation, data);
+
+    this._sendStatsInfo(this._statsEndpoints.negotiation, data);
 };
 

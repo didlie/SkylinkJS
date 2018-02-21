@@ -947,7 +947,7 @@ Skylink.prototype._parseInfo = function(info) {
   this._trigger('readyStateChange', this.READY_STATE_CHANGE.COMPLETED, null, this._selectedRoom);
   log.info('Parsed parameters from webserver. Ready for web-realtime communication');
 
-  this.initStatsModule();
+  // It sends twice the stats because in the second call the user cred are updated.
   this.sendAuthInfoStats(info);
 };
 
@@ -1056,6 +1056,11 @@ Skylink.prototype._loadInfo = function() {
 
       self._readyState = self.READY_STATE_CHANGE.LOADING;
       self._trigger('readyStateChange', self.READY_STATE_CHANGE.LOADING, null, self._selectedRoom);
+
+      // It creates the client id for the stats module.
+      self._clientIdStats = self._createClientIdStats();
+      log.info('Client Id created: ', self._clientIdStats);
+
       self._requestServerInfo('GET', self._path, function(response) {
         self._parseInfo(response);
       });
