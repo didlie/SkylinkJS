@@ -19,7 +19,7 @@ Skylink.prototype._statsEndpoints = {
  *
  * @method _buildStatsURL
  * @private
- * @since 0.6.29
+ * @since 0.6.30
  * @param {String} endPoint Example: /client/recording
  * @return {String} The url with https://xxx.xxx.xxx./api/rest/stats/client'
  */
@@ -32,7 +32,7 @@ Skylink.prototype._buildStatsURL = function(endPoint) {
  *
  * @private
  * @method _sendStatsInfo
- * @since 0.6.29
+ * @since 0.6.30
  * @param {String} Service endpoint chunk URL E.g. client/signaling.
  * @param {JSON} Any data to be sent to the stats server. It will be
  */
@@ -53,7 +53,7 @@ Skylink.prototype._sendStatsInfo = function(endpoint, data) {
  *
  * @method _createClientIdStats
  * @private
- * @since 0.6.29
+ * @since 0.6.30
  * @return {String} Client id
  */
 Skylink.prototype._createClientIdStats = function() {
@@ -65,7 +65,7 @@ Skylink.prototype._createClientIdStats = function() {
  *
  * @method sendPeerInfoStats
  * @public
- * @since 0.6.29
+ * @since 0.6.30
  * @param {MediaStream} WebRTC media stream.
  */
 Skylink.prototype.sendPeerInfoStats = function(mediaStream) {
@@ -134,7 +134,7 @@ Skylink.prototype.sendPeerInfoStats = function(mediaStream) {
  *
  * @method sendAuthInfoStats
  * @public
- * @since 0.6.29
+ * @since 0.6.30
  * @param {JSON} Response from the XMLHTTPRequest for either success or error.
  */
 Skylink.prototype.sendAuthInfoStats = function(apiResult) {
@@ -157,16 +157,16 @@ Skylink.prototype.sendAuthInfoStats = function(apiResult) {
  *
  * @method sendClientSignalingInfoStats
  * @public
- * @since 0.6.29
+ * @since 0.6.30
  * @param {String} The current signaling state.
  */
-Skylink.prototype.sendClientSignalingInfoStats = function(currentState) {
+Skylink.prototype.sendClientSignalingInfoStats = function(currentSignalingState) {
     var data = {
         'client_id': this._clientIdStats,
         'app_key': this._initOptions.appKey,
         'timestamp': new Date().toISOString(),
         'room_id': this._selectedRoom,
-        'state': currentState,
+        'state': currentSignalingState,
         'protocol': this._signalingServerProtocol,
         'server': this._signalingServer,
         'port': this._signalingServerPort,
@@ -186,68 +186,26 @@ Skylink.prototype.sendClientSignalingInfoStats = function(currentState) {
  *
  * @method sendIceAgentInfo
  * @public
- * @since 0.6.29
- * @param {JSON} { statsPromise: WebRTCStats, state: String }
+ * @since 0.6.30
+ * @param {JSON} Selected candidate from _retrieveStats function.
  */
-Skylink.prototype.sendIceAgentInfo = function(options) {
-    var self = this;
-    var rtcStatsReportTmp;
+Skylink.prototype.sendIceAgentInfo = function(selectedCandidate, iceConnectionState) {
+    var data = {
+        'client_id': this._clientIdStats,
+        'app_key': this._initOptions.appKey,
+        'room_id': this._selectedRoom,
+        'timestamp': new Date().toISOString(),
+        'user_id': this._user.uid,
+        'peer_id': this._socket.id,
+        'state': iceConnectionState,
+        'is_trickle': this._initOptions.enableIceTrickle,
+        'local_candidate': this._buildCandidateInfoForIceAgentState(selectedCandidate.local),
+        'remote_candidate': this._buildCandidateInfoForIceAgentState(selectedCandidate.remote)
+    };
 
-    options.statsPromise
-    .then(function(_rtcStatsReport) {
-        var localCandidates = [];
-        var remoteCandidates = [];
-        var state = options.state;
-        var rtcStatsReportTmp = _rtcStatsReport;
+    log.info('Sending ICE agent info stats to endpoint: ' + this._statsEndpoints.iceconnection, data);
 
-        rtcStatsReportTmp.forEach(function(entry) {
-
-            if(entry.id.indexOf('RTCIceCandidatePair') >= 0) {
-
-                // Temporal and explanatory variable: candidate entries.
-                var localCandidateEntry = rtcStatsReportTmp.get(entry.localCandidateId);
-                var remoteCandidateEntry = rtcStatsReportTmp.get(entry.remoteCandidateId);
-
-                // Temporal and explanatory variables: candidate info.
-                var localCandidateInfo = self._buildCandidateInfoForIceAgentState(localCandidateEntry);
-                var remoteCandidateInfo = self._buildCandidateInfoForIceAgentState(remoteCandidateEntry);
-
-                // If there are candidates info, we add to the array of local or remote candidates.
-                if(localCandidateInfo) {
-                    localCandidates.push(localCandidateInfo);
-                }
-
-                if(remoteCandidateInfo) {
-                    remoteCandidates.push(remoteCandidateInfo);
-                }
-            }
-        });
-
-        return {
-            localCandidates: localCandidates,
-            remoteCandidates: remoteCandidates
-        };
-    })
-    .then(function(result) {
-        var data = {
-            'client_id': self._clientIdStats,
-            'app_key': self._initOptions.appKey,
-            'room_id': self._selectedRoom,
-            'timestamp': new Date().toISOString(),
-            'user_id': self._user.uid,
-            'peer_id': self._socket.id,
-            'state': options.state,
-            'is_trickle': self._initOptions.enableIceTrickle,
-            'local_candidate': JSON.stringify(result.localCandidates),
-            'remote_candidate': JSON.stringify(result.remoteCandidates)
-        };
-
-        log.info('Sending ICE agent info stats to endpoint: ' + self._statsEndpoints.iceconnection, data);
-        self._sendStatsInfo(self._statsEndpoints.iceconnection, data);
-    })
-    .catch(function(error) {
-        console.log(error);
-    });
+    this._sendStatsInfo(this._statsEndpoints.iceconnection, data);
 };
 
 /**
@@ -255,15 +213,15 @@ Skylink.prototype.sendIceAgentInfo = function(options) {
  *
  * @method _buildCandidateInfoForIceAgentState
  * @private
- * @since 0.6.29
+ * @since 0.6.30
  * @param {RTCCandidate}
  * @return {JSON}
  */
 Skylink.prototype._buildCandidateInfoForIceAgentState = function(candidate) {
     if(candidate) {
         return {
-            address: candidate.ip,
-            port: candidate.port,
+            address: candidate.ipAddress,
+            port: candidate.portNumber,
             candidateType: candidate.candidateType,
             network_type: candidate.networkType || null,
             transport: candidate.protocol,
@@ -277,7 +235,7 @@ Skylink.prototype._buildCandidateInfoForIceAgentState = function(candidate) {
  *
  * @method sendIceCandidateAndSDPInfoStats
  * @public
- * @since 0.6.29
+ * @since 0.6.30
  * @param {RTCIceCandidate}
  * @param {String}
  * @param {String}
@@ -308,7 +266,7 @@ Skylink.prototype.sendIceCandidateAndSDPInfoStats = function(candidate, state, e
  *
  * @method sendNegotiationInfoStats
  * @public
- * @since 0.6.29
+ * @since 0.6.30
  * @param {String} Negotiation State.
  * @param {String} Weight given when enter the room.
  * @param {String} SDP
@@ -331,7 +289,5 @@ Skylink.prototype.sendNegotiationInfoStats = function(state, weight, sdp, sdpTyp
     };
 
     log.info('Sending negotiation info stats to endpoint: ' + this._statsEndpoints.negotiation, data);
-
     this._sendStatsInfo(this._statsEndpoints.negotiation, data);
 };
-

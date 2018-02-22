@@ -1898,10 +1898,10 @@ Skylink.prototype._createPeerConnection = function(targetMid, isScreenSharing, c
   pc.oniceconnectionstatechange = function(evt) {
     var iceConnectionState = pc.iceConnectionState;
 
-    self.sendIceAgentInfo({
-      statsPromise: pc.getStats(),
-      state: pc.iceConnectionState
-    });
+    self._retrieveStats(targetMid, function(error, result) {
+      debugger;
+      this.sendIceAgentInfo(result.selectedCandidate, result.connection.iceConnectionState);
+    }.bind(self), false, true);
 
     log.debug([targetMid, 'RTCIceConnectionState', null, 'Ice connection state changed ->'], iceConnectionState);
 
