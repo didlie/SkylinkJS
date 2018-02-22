@@ -275,13 +275,12 @@ module.exports = function(grunt) {
         'yuidoc:doc'
     ]);
 
-    grunt.registerTask('watch-publish', [
+    grunt.registerTask('watch', [
     	'versionise',
         'clean:production',
         'concat',
         'replace',
         'uglify',
-        'yuidoc:doc',
         'watch'
     ]);
 
